@@ -1,0 +1,24 @@
+# Large geospatial data files
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.pycharmvenv/
+*.egg-info/
+
+# Output files
+output/
+
+# IDE
+.idea/
+.vscode/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
