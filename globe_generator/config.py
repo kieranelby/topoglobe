@@ -1,0 +1,61 @@
+"""Configuration classes for globe generation."""
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional
+import yaml
+
+
+@dataclass
+class GlobeConfig:
+    """Configuration for globe generation."""
+
+    # Data paths
+    etopo_path: str
+    snow_path: Optional[str]
+
+    # Globe parameters
+    radius_mm: float
+    elevation_range_mm: float
+    min_height_mm: float
+    hollow_radius_mm: float
+
+    # Grid parameters
+    step_deg: float
+
+    # Output
+    output_dir: str
+
+    # Computed values (set during data processing)
+    core_radius_mm: Optional[float] = None
+
+    @classmethod
+    def from_yaml(cls, yaml_path: str) -> "GlobeConfig":
+        """Load configuration from YAML file."""
+        with open(yaml_path, 'r') as f:
+            data = yaml.safe_load(f)
+
+        return cls(
+            etopo_path=data['etopo_path'],
+            snow_path=data.get('snow_path'),
+            radius_mm=float(data['radius_mm']),
+            elevation_range_mm=float(data['elevation_range_mm']),
+            min_height_mm=float(data['min_height_mm']),
+            hollow_radius_mm=float(data['hollow_radius_mm']),
+            step_deg=float(data['step_deg']),
+            output_dir=data['output_dir'],
+        )
+
+
+@dataclass
+class SegmentDefinition:
+    """Definition of a globe segment."""
+
+    segment_id: str
+    lat_min: float
+    lat_max: float
+    lon_min: float
+    lon_max: float
+
+    def __repr__(self):
+        return f"Segment({self.segment_id})"

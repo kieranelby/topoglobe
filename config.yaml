@@ -1,0 +1,15 @@
+# Data files
+etopo_path: "./data/ETOPO1_Bed_g_gmt4.grd"
+snow_path: "./data/MOD10CM_snow_2024-153.tif"
+
+# Globe parameters
+radius_mm: 90.0
+elevation_range_mm: 15.0
+min_height_mm: 0.5
+hollow_radius_mm: 70.0
+
+# Grid parameters
+step_deg: 1.0
+
+# Output
+output_dir: "./output"
