@@ -42,7 +42,7 @@ def main():
         print(f"   ✓ Generated {len(segments)} segments")
 
         # Test generating cells for one segment
-        test_segment = segments[0]
+        test_segment = segments[9]
         print(f"\n4. Testing segment: {test_segment.segment_id}")
         print(f"   Latitude: {test_segment.lat_min}° to {test_segment.lat_max}°")
         print(f"   Longitude: {test_segment.lon_min}° to {test_segment.lon_max}°")
@@ -62,8 +62,6 @@ def main():
         print(f"   Snow cells: {(segment_cells['snow_height_mm'] > 0).sum()}")
 
         print("\n✓ Data processing test PASSED!")
-        print("\nNext step: Install FreeCAD to enable geometry generation:")
-        print("  sudo apt install freecad python3-freecad")
 
     finally:
         processor.close_datasets()

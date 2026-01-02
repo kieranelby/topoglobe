@@ -29,7 +29,7 @@ sudo snap remove freecad
 **Install from APT:**
 ```bash
 sudo apt update
-sudo apt install freecad python3-freecad
+sudo apt install freecad
 ```
 
 **Verify FreeCAD Python module:**

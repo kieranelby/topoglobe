@@ -68,8 +68,8 @@ class DataProcessor:
         cells = build_equal_area_grid(
             min_lat_deg=-90.0,
             max_lat_deg=90.0,
-            min_lng_deg=0.0,
-            max_lng_deg=360.0,
+            min_lng_deg=-180.0,
+            max_lng_deg=180.0,
             step_deg=self.config.step_deg
         )
 
@@ -285,16 +285,3 @@ class DataProcessor:
         cells_df = self._calculate_heights_for_segment(cells_df)
 
         return cells_df
-
-    def filter_cells_for_segment(
-        self,
-        cells_df: pl.DataFrame,
-        segment: SegmentDefinition
-    ) -> pl.DataFrame:
-        """Filter cells that fall within segment boundaries (legacy method)."""
-        return cells_df.filter(
-            (pl.col("lat_centre_deg") >= segment.lat_min) &
-            (pl.col("lat_centre_deg") <= segment.lat_max) &
-            (pl.col("lng_centre_deg") >= segment.lon_min) &
-            (pl.col("lng_centre_deg") <= segment.lon_max)
-        )

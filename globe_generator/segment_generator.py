@@ -31,19 +31,24 @@ def generate_segment_definitions() -> List[SegmentDefinition]:
     ]
 
     for lat_min, lat_max, lon_step in bands:
-        for lon_min in range(0, 360, lon_step):
+        for lon_min in range(-180, 180, lon_step):
             lon_max = lon_min + lon_step
 
             # Create segment ID
-            # Use N/S prefix and absolute latitude values
+            # Use N/S/E/W prefix and absolute latitude values
             if lat_min >= 0:
                 lat_prefix = "N"
             else:
                 lat_prefix = "S"
 
+            if lon_min >= 0:
+                lon_prefix = "E"
+            else:
+                lon_prefix = "W"
+
             segment_id = (
                 f"{lat_prefix}{abs(lat_min):02d}-{abs(lat_max):02d}_"
-                f"E{lon_min:03d}-{lon_max:03d}"
+                f"{lon_prefix}{abs(lon_min):03d}-{abs(lon_max):03d}"
             )
 
             segments.append(SegmentDefinition(
