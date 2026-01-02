@@ -143,21 +143,30 @@ for cell in cells:
             ssp = make_sphere_patch(core_radius_mm + water_height_mm, snow_height_mm, lat1, lat2, lon1, lon2)
             snow_shapes.append(ssp)
 
-# Create compound objects
+# Fuse shapes into single solids (avoids non-manifold edges)
 if water_shapes:
-    water_compound = Part.makeCompound(water_shapes)
+    if len(water_shapes) == 1:
+        water_solid = water_shapes[0]
+    else:
+        water_solid = water_shapes[0].multiFuse(water_shapes[1:])
     water_obj = doc.addObject("Part::Feature", "water")
-    water_obj.Shape = water_compound
+    water_obj.Shape = water_solid
 
 if land_shapes:
-    land_compound = Part.makeCompound(land_shapes)
+    if len(land_shapes) == 1:
+        land_solid = land_shapes[0]
+    else:
+        land_solid = land_shapes[0].multiFuse(land_shapes[1:])
     land_obj = doc.addObject("Part::Feature", "land")
-    land_obj.Shape = land_compound
+    land_obj.Shape = land_solid
 
 if snow_shapes:
-    snow_compound = Part.makeCompound(snow_shapes)
+    if len(snow_shapes) == 1:
+        snow_solid = snow_shapes[0]
+    else:
+        snow_solid = snow_shapes[0].multiFuse(snow_shapes[1:])
     snow_obj = doc.addObject("Part::Feature", "snow")
-    snow_obj.Shape = snow_compound
+    snow_obj.Shape = snow_solid
 
 doc.recompute()
 
