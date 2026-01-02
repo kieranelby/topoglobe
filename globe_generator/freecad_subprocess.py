@@ -161,6 +161,31 @@ if snow_shapes:
 
 doc.recompute()
 
+# Rotate segment to position as if at north pole (lat=90°)
+lat_center = (segment_lat_min + segment_lat_max) / 2.0
+lon_center = (segment_lon_min + segment_lon_max) / 2.0
+
+# Calculate the 3D direction vector for the segment center
+lat_rad = math.radians(lat_center)
+lon_rad = math.radians(lon_center)
+from_vec = App.Vector(
+    math.cos(lat_rad) * math.cos(lon_rad),
+    math.cos(lat_rad) * math.sin(lon_rad),
+    math.sin(lat_rad)
+)
+to_vec = App.Vector(0, 0, 1)  # North pole direction
+
+# Single rotation to align segment center with north pole
+rotation = App.Rotation(from_vec, to_vec)
+
+# Apply rotation to all objects
+for obj in doc.Objects:
+    if hasattr(obj, 'Shape') and obj.Name in ['water', 'land', 'snow']:
+        if obj.Shape.Volume > 0:
+            obj.Placement = App.Placement(App.Vector(0, 0, 0), rotation)
+
+doc.recompute()
+
 # Convert each Part object to a Mesh for multi-color 3MF export
 mesh_objects_list = []
 
