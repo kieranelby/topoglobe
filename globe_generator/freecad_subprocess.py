@@ -111,6 +111,7 @@ doc = App.newDocument("GlobeSegment")
 
 # Calculate dual cutout regions on western edge (lowest longitude)
 # Position cutouts at 1/3 and 2/3 of segment height
+# Longitude span is adjusted for latitude to match tab dimensions
 segment_lat_range = segment_lat_max - segment_lat_min
 
 # Lower cutout (at 1/3 height)
@@ -118,14 +119,20 @@ cutout_lower_lat_center = segment_lat_min + (segment_lat_range / 3.0)
 cutout_lower_lat_min = cutout_lower_lat_center - (cutout_size_degrees / 2.0)
 cutout_lower_lat_max = cutout_lower_lat_center + (cutout_size_degrees / 2.0)
 
+# Adjust longitude span to match latitude-adjusted tabs
+cutout_lower_lon_span = cutout_size_degrees / max(0.1, math.cos(math.radians(cutout_lower_lat_center)))
+cutout_lower_lon_min = segment_lon_min
+cutout_lower_lon_max = segment_lon_min + cutout_lower_lon_span
+
 # Upper cutout (at 2/3 height)
 cutout_upper_lat_center = segment_lat_min + (2.0 * segment_lat_range / 3.0)
 cutout_upper_lat_min = cutout_upper_lat_center - (cutout_size_degrees / 2.0)
 cutout_upper_lat_max = cutout_upper_lat_center + (cutout_size_degrees / 2.0)
 
-# Both cutouts share longitude bounds
-cutout_lon_min = segment_lon_min
-cutout_lon_max = segment_lon_min + cutout_size_degrees
+# Adjust longitude span for this cutout's latitude
+cutout_upper_lon_span = cutout_size_degrees / max(0.1, math.cos(math.radians(cutout_upper_lat_center)))
+cutout_upper_lon_min = segment_lon_min
+cutout_upper_lon_max = segment_lon_min + cutout_upper_lon_span
 
 # Create full-thickness shell patches with cutouts for tabs
 # South patch (below lower cutout)
@@ -164,7 +171,7 @@ shell_east_lower = make_sphere_patch(
     shell_thickness_mm,
     cutout_lower_lat_min,
     cutout_lower_lat_max,
-    cutout_lon_max,
+    cutout_lower_lon_max,
     segment_lon_max
 )
 
@@ -174,7 +181,7 @@ shell_east_upper = make_sphere_patch(
     shell_thickness_mm,
     cutout_upper_lat_min,
     cutout_upper_lat_max,
-    cutout_lon_max,
+    cutout_upper_lon_max,
     segment_lon_max
 )
 
@@ -184,21 +191,26 @@ snow_shapes = []
 
 # Create dual tabs on eastern edge (highest longitude)
 # Tabs start at hollow_radius_mm and extend full shell thickness
-tab_lon_min = segment_lon_max
-tab_lon_max = segment_lon_max + tab_size_degrees
+# Longitude span is adjusted for latitude to maintain physical aspect ratio
 
 # Lower tab (at 1/3 height)
 tab_lower_lat_center = segment_lat_min + (segment_lat_range / 3.0)
 tab_lower_lat_min = tab_lower_lat_center - (tab_size_degrees / 2.0)
 tab_lower_lat_max = tab_lower_lat_center + (tab_size_degrees / 2.0)
 
+# Adjust longitude span to compensate for latitude convergence
+# At high latitudes, longitude degrees are physically shorter, so extend further
+tab_lower_lon_span = tab_size_degrees / max(0.1, math.cos(math.radians(tab_lower_lat_center)))
+tab_lower_lon_min = segment_lon_max
+tab_lower_lon_max = segment_lon_max + tab_lower_lon_span
+
 tab_lower = make_sphere_patch(
     hollow_radius_mm,
     shell_thickness_mm,
     tab_lower_lat_min,
     tab_lower_lat_max,
-    tab_lon_min,
-    tab_lon_max
+    tab_lower_lon_min,
+    tab_lower_lon_max
 )
 water_shapes.append(tab_lower)
 
@@ -207,13 +219,18 @@ tab_upper_lat_center = segment_lat_min + (2.0 * segment_lat_range / 3.0)
 tab_upper_lat_min = tab_upper_lat_center - (tab_size_degrees / 2.0)
 tab_upper_lat_max = tab_upper_lat_center + (tab_size_degrees / 2.0)
 
+# Adjust longitude span for this tab's latitude
+tab_upper_lon_span = tab_size_degrees / max(0.1, math.cos(math.radians(tab_upper_lat_center)))
+tab_upper_lon_min = segment_lon_max
+tab_upper_lon_max = segment_lon_max + tab_upper_lon_span
+
 tab_upper = make_sphere_patch(
     hollow_radius_mm,
     shell_thickness_mm,
     tab_upper_lat_min,
     tab_upper_lat_max,
-    tab_lon_min,
-    tab_lon_max
+    tab_upper_lon_min,
+    tab_upper_lon_max
 )
 water_shapes.append(tab_upper)
 
