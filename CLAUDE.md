@@ -71,7 +71,7 @@ Edit `config.yaml` to set data paths and globe parameters. Key parameters:
 **FreeCAD Subprocess Architecture**: FreeCAD runs in console mode (`freecad --console script.py`) as a subprocess. The script is generated dynamically and includes explicit `sys.exit(0)` to ensure clean termination. Success is detected by checking if the output file exists (not by stdout message, which doesn't reliably pass through FreeCAD's console mode).
 
 ### Segment Naming Convention
-Format: `{N|S}{lat_min}-{lat_max}_E{lon_min}-{lon_max}`
+Format: `{N|S}{lat_min}-{lat_max}_{E|W}{lon_min}-{lon_max}`
 - 4 polar segments (60-90°): 90° longitude each
 - 8 mid-latitude segments (30-60°): 45° longitude each
 - 12 equatorial segments (0-30°): 30° longitude each

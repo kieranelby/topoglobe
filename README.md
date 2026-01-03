@@ -131,11 +131,12 @@ The globe is divided into 48 segments with increasing density towards the poles:
 - 8 segments: 30°-60° S (45° longitude each)
 - 4 segments: 60°-90° S (90° longitude each)
 
-Segment naming: `{N|S}{lat_min}-{lat_max}_E{lon_min}-{lon_max}`
+Segment naming: `{N|S}{lat_min}-{lat_max}_{E|W}{lon_min}-{lon_max}`
 
 Examples:
+- `N60-90_W180-090` - North pole segment, 90-180° West
 - `N60-90_E000-090` - North pole segment, 0-90° East
-- `S30-60_E045-090` - Southern mid-latitude, 45-90° East
+- `S30-60_W090-045` - Southern mid-latitude, 45-90° West
 
 ## Output
 
