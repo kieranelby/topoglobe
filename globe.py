@@ -16,7 +16,7 @@ from pathlib import Path
 from globe_generator.config import GlobeConfig
 from globe_generator.data_processor import DataProcessor
 from globe_generator.segment_generator import generate_segment_definitions
-from globe_generator.freecad_subprocess import generate_segment_with_subprocess
+from globe_generator.mesh_generator import generate_segment_mesh
 
 
 def setup_logging(verbose: bool):
@@ -133,8 +133,8 @@ def main():
                 # Output path
                 output_path = output_dir / f"{segment.segment_id}.3mf"
 
-                # Generate using subprocess
-                success = generate_segment_with_subprocess(
+                # Generate using pure-Python mesh generation
+                success = generate_segment_mesh(
                     segment_cells,
                     segment,
                     config,
