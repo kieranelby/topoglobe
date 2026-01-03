@@ -11,7 +11,7 @@ tab_size_degrees: 2.0
 clearance_mm: 0.15
 
 # Grid parameters
-step_deg: 1.0
+step_deg: 0.333333
 
 # Output
 output_dir: "./output"

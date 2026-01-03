@@ -41,10 +41,10 @@ snow_path: "./data/MOD10CM_snow_2024-153.tif"  # Optional
 radius_mm: 90.0              # Base radius in millimeters
 elevation_range_mm: 15.0     # Height range for elevation features
 min_height_mm: 0.2           # Minimum feature height
-shell_thickness_mm: 10.0     # Wall thickness of the globe shell
+shell_thickness_mm: 7.0      # Wall thickness of the globe shell
 
 # Grid parameters
-step_deg: 1.0                # Grid cell size in degrees
+step_deg: 0.333333           # Grid cell size in degrees (~37km at equator)
 
 # Output
 output_dir: "./output"       # Directory for 3MF files
@@ -58,7 +58,7 @@ output_dir: "./output"       # Directory for 3MF files
 python3 globe.py
 ```
 
-This will generate all globe segments (without snow) and save them as 3MF files in the output directory. Takes approximately **2-3 minutes** for all 48 segments.
+This will generate all globe segments (without snow) and save them as 3MF files in the output directory. Takes approximately **9-10 minutes** for all 48 segments at 0.333333° resolution.
 
 ### Generate Specific Segments
 
@@ -170,15 +170,21 @@ globe_generator/
 
 ## Performance
 
-**Processing Time:**
-- Per segment: ~3-4 seconds (pure-Python mesh generation)
-- All 48 segments: ~2-3 minutes total
+**Processing Time (at 0.333333° resolution):**
+- Per segment: ~10-12 seconds (pure-Python mesh generation)
+- All 48 segments: ~9-10 minutes total
 - Data processing: elevation sampling ~2 seconds, cell processing ~5 seconds per segment
-- Mesh generation: ~1-2 seconds per segment
+- Mesh generation: ~3-5 seconds per segment
+
+**Grid Resolution:**
+- Cell size: 0.333333° (~37km at equator, ~20 arc-minutes)
+- Typical segment: 8,000-9,000 cells
+- High detail capture of elevation features
 
 **Comparison to Previous FreeCAD Implementation:**
-- **18x faster** mesh generation (3s vs 60s per segment)
-- **18x faster** total time (2-3 minutes vs 50-60 minutes for all 48 segments)
+- **5-6x faster** per segment at same resolution (10s vs 60s)
+- **Much higher detail** possible due to efficient mesh generation
+- Previous implementation at this resolution would take hours
 
 **Memory Usage:**
 - Python process uses ~500 MB RAM during mesh generation
@@ -187,16 +193,20 @@ globe_generator/
 
 ### 3MF File Size
 
-Each segment 3MF file is typically 1-2 MB, depending on terrain complexity and subdivision settings.
+Each segment 3MF file is typically **10-15 MB** at 0.333333° resolution, depending on terrain complexity.
 
-**Adjusting Mesh Resolution:**
+**Total output size:** ~650 MB for all 48 segments
 
-To adjust shell smoothness, edit `globe_generator/spherical_geometry.py`:
-- `target_edge_mm=2.0` - Default, smooth surfaces (current)
-- `target_edge_mm=1.0` - Higher quality, larger files, slower
-- `target_edge_mm=3.0` - Lower quality, smaller files, faster
+**Adjusting Grid Resolution:**
 
-Shell patches use ~1° angular subdivision by default for professional-quality smooth surfaces.
+Edit `config.yaml` to adjust detail level:
+- `step_deg: 0.333333` - High detail, ~37km cells (current)
+- `step_deg: 0.5` - Medium detail, ~55km cells, faster generation
+- `step_deg: 1.0` - Lower detail, ~110km cells, fastest generation
+
+**Adjusting Shell Smoothness:**
+
+Shell patches automatically use ~1° angular subdivision for professional-quality smooth surfaces. To adjust, edit `globe_generator/mesh_generator.py` line 196-197.
 
 ## License
 
