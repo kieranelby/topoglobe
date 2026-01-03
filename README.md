@@ -14,18 +14,12 @@ This program combines elevation data (ETOPO1) and optional snow coverage data (M
 
 FreeCAD is used as a subprocess to generate 3D geometry. Any installation method works:
 
-**Option 1: Install via Snap (Easiest)**
+**Option 1: Install via Snap (Easiest, Newer Version)**
 ```bash
 sudo snap install freecad
 ```
 
 **Option 2: Install via APT**
-```bash
-sudo apt update
-sudo apt install freecad
-```
-
-**Option 3: Install FreeCAD PPA (Latest stable version)**
 ```bash
 sudo add-apt-repository ppa:freecad-maintainers/freecad-stable
 sudo apt update
