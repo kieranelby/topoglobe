@@ -210,9 +210,12 @@ for cell in cells:
             snow_shapes.append(ssp)
 
 # Fuse shapes into single solids (avoids non-manifold edges)
+# Note: Even single shapes are fused with a copy of themselves to ensure
+# consistent behavior with rotation. Single unfused shapes retain individual
+# Placements which interfere with the global rotation applied later.
 if water_shapes:
     if len(water_shapes) == 1:
-        water_solid = water_shapes[0]
+        water_solid = water_shapes[0].multiFuse([water_shapes[0].copy()])
     else:
         water_solid = water_shapes[0].multiFuse(water_shapes[1:])
     water_obj = doc.addObject("Part::Feature", "water")
@@ -220,7 +223,7 @@ if water_shapes:
 
 if land_shapes:
     if len(land_shapes) == 1:
-        land_solid = land_shapes[0]
+        land_solid = land_shapes[0].multiFuse([land_shapes[0].copy()])
     else:
         land_solid = land_shapes[0].multiFuse(land_shapes[1:])
     land_obj = doc.addObject("Part::Feature", "land")
@@ -228,7 +231,7 @@ if land_shapes:
 
 if snow_shapes:
     if len(snow_shapes) == 1:
-        snow_solid = snow_shapes[0]
+        snow_solid = snow_shapes[0].multiFuse([snow_shapes[0].copy()])
     else:
         snow_solid = snow_shapes[0].multiFuse(snow_shapes[1:])
     snow_obj = doc.addObject("Part::Feature", "snow")
