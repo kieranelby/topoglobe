@@ -209,6 +209,11 @@ for cell in cells:
             ssp = make_sphere_patch(core_radius_mm + water_height_mm, snow_height_mm, lat1, lat2, lon1, lon2)
             snow_shapes.append(ssp)
 
+# Print shape counts for debugging
+import sys
+sys.stderr.write(f"Shape counts - Water: {{len(water_shapes)}}, Land: {{len(land_shapes)}}, Snow: {{len(snow_shapes)}}\\n")
+sys.stderr.flush()
+
 # Fuse shapes into single solids (avoids non-manifold edges)
 # Note: Even single shapes are fused with a copy of themselves to ensure
 # consistent behavior with rotation. Single unfused shapes retain individual
@@ -340,6 +345,10 @@ def generate_segment_with_subprocess(
 
         # Check for success by verifying the output file was created
         if output_path.exists() and output_path.stat().st_size > 0:
+            if result.stderr:
+                logger.debug(f"FreeCAD stderr: {result.stderr}")
+            if result.stdout:
+                logger.debug(f"FreeCAD stdout: {result.stdout}")
             logger.info(f"Successfully exported {output_path}")
             return True
         else:
