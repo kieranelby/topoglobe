@@ -59,7 +59,7 @@ snow_path: "./data/MOD10CM_snow_2024-153.tif"  # Optional
 radius_mm: 90.0              # Base radius in millimeters
 elevation_range_mm: 15.0     # Height range for elevation features
 min_height_mm: 0.2           # Minimum feature height
-hollow_radius_mm: 65.498     # Inner hollow core radius
+shell_thickness_mm: 10.0     # Wall thickness of the globe shell
 
 # Grid parameters
 step_deg: 1.0                # Grid cell size in degrees

@@ -44,8 +44,14 @@ class DataProcessor:
 
         # Store core radius for geometry generation
         self.config.core_radius_mm = self.config.radius_mm + self.global_min_elevation * self.elevation_to_mm
+
+        # Calculate hollow radius from shell thickness
+        self.config.hollow_radius_mm = self.config.core_radius_mm - self.config.shell_thickness_mm
+
         logger.info(f"Global elevation range: {self.global_min_elevation:.1f}m to {self.global_max_elevation:.1f}m")
         logger.info(f"Core radius: {self.config.core_radius_mm:.3f} mm")
+        logger.info(f"Shell thickness: {self.config.shell_thickness_mm:.1f} mm")
+        logger.info(f"Hollow radius: {self.config.hollow_radius_mm:.3f} mm")
 
     def close_datasets(self):
         """Close open datasets."""
@@ -142,7 +148,13 @@ class DataProcessor:
 
         # Store core radius for geometry generation
         self.config.core_radius_mm = self.config.radius_mm + min_elevation * elevation_to_mm
+
+        # Calculate hollow radius from shell thickness
+        self.config.hollow_radius_mm = self.config.core_radius_mm - self.config.shell_thickness_mm
+
         logger.info(f"Core radius: {self.config.core_radius_mm:.3f} mm")
+        logger.info(f"Shell thickness: {self.config.shell_thickness_mm:.1f} mm")
+        logger.info(f"Hollow radius: {self.config.hollow_radius_mm:.3f} mm")
 
         # Water height (ocean depth)
         cells_df = cells_df.with_columns([

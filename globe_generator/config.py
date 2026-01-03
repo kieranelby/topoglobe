@@ -18,7 +18,7 @@ class GlobeConfig:
     radius_mm: float
     elevation_range_mm: float
     min_height_mm: float
-    hollow_radius_mm: float
+    shell_thickness_mm: float
 
     # Grid parameters
     step_deg: float
@@ -28,6 +28,7 @@ class GlobeConfig:
 
     # Computed values (set during data processing)
     core_radius_mm: Optional[float] = None
+    hollow_radius_mm: Optional[float] = None
 
     @classmethod
     def from_yaml(cls, yaml_path: str) -> "GlobeConfig":
@@ -41,7 +42,7 @@ class GlobeConfig:
             radius_mm=float(data['radius_mm']),
             elevation_range_mm=float(data['elevation_range_mm']),
             min_height_mm=float(data['min_height_mm']),
-            hollow_radius_mm=float(data['hollow_radius_mm']),
+            shell_thickness_mm=float(data['shell_thickness_mm']),
             step_deg=float(data['step_deg']),
             output_dir=data['output_dir'],
         )

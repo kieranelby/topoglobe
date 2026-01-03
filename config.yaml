@@ -6,7 +6,7 @@ snow_path: "./data/MOD10CM_snow_2024-153.tif"
 radius_mm: 90.0
 elevation_range_mm: 15.0
 min_height_mm: 0.5
-hollow_radius_mm: 75.0
+shell_thickness_mm: 10.0
 
 # Grid parameters
 step_deg: 1.0
