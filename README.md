@@ -10,26 +10,31 @@ This program combines elevation data (ETOPO1) and optional snow coverage data (M
 
 ### Prerequisites
 
-**FreeCAD Python Library (Required)**
+**FreeCAD (Required)**
 
-The snap version of FreeCAD cannot be used as a Python library. You need to install FreeCAD via one of these methods:
+FreeCAD is used as a subprocess to generate 3D geometry. Any installation method works:
 
-**Option 1: Install via APT (Recommended)**
+**Option 1: Install via Snap (Easiest)**
 ```bash
-sudo apt update
-sudo apt install freecad python3-freecad
+sudo snap install freecad
 ```
 
-**Option 2: Install FreeCAD PPA (Latest stable version)**
+**Option 2: Install via APT**
+```bash
+sudo apt update
+sudo apt install freecad
+```
+
+**Option 3: Install FreeCAD PPA (Latest stable version)**
 ```bash
 sudo add-apt-repository ppa:freecad-maintainers/freecad-stable
 sudo apt update
-sudo apt install freecad python3-freecad
+sudo apt install freecad
 ```
 
-After installation, verify FreeCAD Python module is accessible:
+After installation, verify FreeCAD is accessible:
 ```bash
-python3 -c "import FreeCAD; print('FreeCAD version:', FreeCAD.Version())"
+freecad --version
 ```
 
 **Python Dependencies**
@@ -187,21 +192,22 @@ globe_generator/
 
 ### "FreeCAD not found" Error
 
-If you get this error, FreeCAD Python module is not accessible:
+If you get this error, the FreeCAD executable is not in your PATH:
 
-1. Remove snap version if installed:
+1. Check if FreeCAD is installed:
    ```bash
-   sudo snap remove freecad
+   which freecad
+   freecad --version
    ```
 
-2. Install via APT:
+2. If not installed, install via snap (easiest):
    ```bash
-   sudo apt install freecad python3-freecad
+   sudo snap install freecad
    ```
 
-3. Verify installation:
+3. Or install via APT:
    ```bash
-   python3 -c "import FreeCAD; print(FreeCAD.Version())"
+   sudo apt install freecad
    ```
 
 ### Performance

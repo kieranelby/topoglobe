@@ -10,11 +10,12 @@ This project generates 3D-printable topographic globe segments from elevation da
 
 ### Setup
 ```bash
-# Install FreeCAD (required, snap version won't work)
-sudo apt install freecad python3-freecad
+# Install FreeCAD (required) - any method works
+sudo snap install freecad
+# OR: sudo apt install freecad
 
-# Verify FreeCAD Python module
-python3 -c "import FreeCAD; print('FreeCAD version:', FreeCAD.Version())"
+# Verify FreeCAD executable
+freecad --version
 
 # Install Python dependencies
 pip install -r requirements.txt
@@ -101,7 +102,7 @@ Format: `{N|S}{lat_min}-{lat_max}_E{lon_min}-{lon_max}`
 
 ## Common Pitfalls
 
-**FreeCAD Import Issues**: The snap version of FreeCAD cannot be used as a Python library. Must install via apt: `sudo apt install python3-freecad`.
+**FreeCAD Executable**: FreeCAD must be accessible in PATH as `freecad`. Any installation method works (snap, apt, PPA) since we use it as a subprocess, not as a Python library.
 
 **Snow Flag Logic**: Snow is disabled by default. The flag is `--snow` to enable (not `--no-snow` to disable). Code checks `if not args.snow: config.snow_path = None`.
 
