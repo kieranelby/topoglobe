@@ -161,32 +161,28 @@ class SphericalPatchMeshBuilder:
         hollow_radius_mm = self.config.hollow_radius_mm
         shell_thickness_mm = self.config.shell_thickness_mm
         tab_size_degrees = self.config.tab_size_degrees
-        clearance_mm = self.config.clearance_mm
-
-        # Calculate clearance in degrees
-        clearance_degrees = (clearance_mm / hollow_radius_mm) * (180.0 / math.pi)
-        cutout_size_degrees = tab_size_degrees + 2.0 * clearance_degrees
 
         # Calculate dual cutout regions on western edge
+        # Cutouts are same angular size as tabs (clearance applied to tab thickness instead)
         segment_lat_range = segment.lat_max - segment.lat_min
 
         # Lower cutout (at 1/3 height)
         cutout_lower_lat_center = segment.lat_min + (segment_lat_range / 3.0)
-        cutout_lower_lat_min = cutout_lower_lat_center - (cutout_size_degrees / 2.0)
-        cutout_lower_lat_max = cutout_lower_lat_center + (cutout_size_degrees / 2.0)
+        cutout_lower_lat_min = cutout_lower_lat_center - (tab_size_degrees / 2.0)
+        cutout_lower_lat_max = cutout_lower_lat_center + (tab_size_degrees / 2.0)
 
         # Adjust longitude span to match latitude-adjusted tabs
-        cutout_lower_lon_span = cutout_size_degrees / max(0.1, math.cos(math.radians(cutout_lower_lat_center)))
+        cutout_lower_lon_span = tab_size_degrees / max(0.1, math.cos(math.radians(cutout_lower_lat_center)))
         cutout_lower_lon_min = segment.lon_min
         cutout_lower_lon_max = segment.lon_min + cutout_lower_lon_span
 
         # Upper cutout (at 2/3 height)
         cutout_upper_lat_center = segment.lat_min + (2.0 * segment_lat_range / 3.0)
-        cutout_upper_lat_min = cutout_upper_lat_center - (cutout_size_degrees / 2.0)
-        cutout_upper_lat_max = cutout_upper_lat_center + (cutout_size_degrees / 2.0)
+        cutout_upper_lat_min = cutout_upper_lat_center - (tab_size_degrees / 2.0)
+        cutout_upper_lat_max = cutout_upper_lat_center + (tab_size_degrees / 2.0)
 
         # Adjust longitude span for this cutout's latitude
-        cutout_upper_lon_span = cutout_size_degrees / max(0.1, math.cos(math.radians(cutout_upper_lat_center)))
+        cutout_upper_lon_span = tab_size_degrees / max(0.1, math.cos(math.radians(cutout_upper_lat_center)))
         cutout_upper_lon_min = segment.lon_min
         cutout_upper_lon_max = segment.lon_min + cutout_upper_lon_span
 
@@ -284,7 +280,7 @@ class SphericalPatchMeshBuilder:
         """
         Create 2 tab patches on eastern edge.
 
-        Replicates the logic from freecad_subprocess.py lines 192-235.
+        Tabs are thinner than shell by clearance amount to provide radial clearance.
 
         Returns:
             List of 2 mesh patches (lower tab, upper tab)
@@ -292,6 +288,10 @@ class SphericalPatchMeshBuilder:
         hollow_radius_mm = self.config.hollow_radius_mm
         shell_thickness_mm = self.config.shell_thickness_mm
         tab_size_degrees = self.config.tab_size_degrees
+        clearance_mm = self.config.clearance_mm
+
+        # Tabs are thinner than shell to provide clearance in depth
+        tab_thickness_mm = shell_thickness_mm - clearance_mm
 
         segment_lat_range = segment.lat_max - segment.lat_min
 
@@ -318,7 +318,7 @@ class SphericalPatchMeshBuilder:
 
         tab_lower = self.create_patch(
             hollow_radius_mm,
-            hollow_radius_mm + shell_thickness_mm,
+            hollow_radius_mm + tab_thickness_mm,
             tab_lower_lat_min,
             tab_lower_lat_max,
             tab_lower_lon_min,
@@ -343,7 +343,7 @@ class SphericalPatchMeshBuilder:
 
         tab_upper = self.create_patch(
             hollow_radius_mm,
-            hollow_radius_mm + shell_thickness_mm,
+            hollow_radius_mm + tab_thickness_mm,
             tab_upper_lat_min,
             tab_upper_lat_max,
             tab_upper_lon_min,
@@ -440,6 +440,7 @@ def export_segment_3mf(
     water_mesh: Optional[trimesh.Trimesh],
     land_mesh: Optional[trimesh.Trimesh],
     snow_mesh: Optional[trimesh.Trimesh],
+    segment_id: str,
     output_path: Path
 ) -> None:
     """
@@ -449,6 +450,7 @@ def export_segment_3mf(
         water_mesh: Water layer mesh (blue)
         land_mesh: Land layer mesh (brown)
         snow_mesh: Snow layer mesh (white)
+        segment_id: Segment identifier to include in object names
         output_path: Output file path
     """
     scene = trimesh.Scene()
@@ -456,24 +458,24 @@ def export_segment_3mf(
     if water_mesh is not None and len(water_mesh.vertices) > 0:
         scene.add_geometry(
             water_mesh,
-            node_name='water',
-            geom_name='water',
+            node_name=f'{segment_id}_water',
+            geom_name=f'{segment_id}_water',
             metadata={'color': [0, 119, 190, 255]}  # Blue
         )
 
     if land_mesh is not None and len(land_mesh.vertices) > 0:
         scene.add_geometry(
             land_mesh,
-            node_name='land',
-            geom_name='land',
+            node_name=f'{segment_id}_land',
+            geom_name=f'{segment_id}_land',
             metadata={'color': [139, 90, 43, 255]}  # Brown
         )
 
     if snow_mesh is not None and len(snow_mesh.vertices) > 0:
         scene.add_geometry(
             snow_mesh,
-            node_name='snow',
-            geom_name='snow',
+            node_name=f'{segment_id}_snow',
+            geom_name=f'{segment_id}_snow',
             metadata={'color': [255, 255, 255, 255]}  # White
         )
 
@@ -589,7 +591,7 @@ def generate_segment_mesh(
             snow_mesh.apply_transform(rotation_matrix)
 
         # Export to 3MF
-        export_segment_3mf(water_mesh, land_mesh, snow_mesh, output_path)
+        export_segment_3mf(water_mesh, land_mesh, snow_mesh, segment.segment_id, output_path)
 
         # Verify output file was created
         if output_path.exists() and output_path.stat().st_size > 0:
