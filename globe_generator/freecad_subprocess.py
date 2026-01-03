@@ -49,11 +49,18 @@ import math
 # Configuration
 hollow_radius_mm = {config.hollow_radius_mm}
 core_radius_mm = {config.core_radius_mm}
+shell_thickness_mm = {config.shell_thickness_mm}
+tab_size_degrees = {config.tab_size_degrees}
+clearance_mm = {config.clearance_mm}
 segment_lat_min = {segment.lat_min}
 segment_lat_max = {segment.lat_max}
 segment_lon_min = {segment.lon_min}
 segment_lon_max = {segment.lon_max}
 output_path = "{output_path}"
+
+# Calculate clearance in degrees
+clearance_degrees = (clearance_mm / hollow_radius_mm) * (180.0 / math.pi)
+cutout_size_degrees = tab_size_degrees + 2.0 * clearance_degrees
 
 # Cell data
 cells = {cells_data!r}
@@ -102,19 +109,78 @@ def make_sphere_patch(r, t, lat1, lat2, lon1, lon2):
 # Create document
 doc = App.newDocument("GlobeSegment")
 
-# Create hollow core
-core = make_sphere_patch(
-    hollow_radius_mm,
-    core_radius_mm - hollow_radius_mm,
+# Calculate cutout region on western edge (lowest longitude)
+cutout_lat_center = (segment_lat_min + segment_lat_max) / 2.0
+cutout_lat_min = cutout_lat_center - (cutout_size_degrees / 2.0)
+cutout_lat_max = cutout_lat_center + (cutout_size_degrees / 2.0)
+cutout_lon_min = segment_lon_min
+cutout_lon_max = segment_lon_min + cutout_size_degrees
+
+# Split shell approach: create outer and inner layers separately
+inner_thickness = shell_thickness_mm / 2.0
+outer_thickness = shell_thickness_mm / 2.0
+
+# Outer shell layer (full segment, no cutout)
+outer_shell = make_sphere_patch(
+    hollow_radius_mm + inner_thickness,
+    outer_thickness,
     segment_lat_min,
     segment_lat_max,
     segment_lon_min,
     segment_lon_max
 )
 
-water_shapes = [core]
+# Inner shell layer - south patch (below cutout)
+inner_south = make_sphere_patch(
+    hollow_radius_mm,
+    inner_thickness,
+    segment_lat_min,
+    cutout_lat_min,
+    segment_lon_min,
+    segment_lon_max
+)
+
+# Inner shell layer - north patch (above cutout)
+inner_north = make_sphere_patch(
+    hollow_radius_mm,
+    inner_thickness,
+    cutout_lat_max,
+    segment_lat_max,
+    segment_lon_min,
+    segment_lon_max
+)
+
+# Inner shell layer - east patch (right of cutout, in the cutout latitude band)
+inner_east = make_sphere_patch(
+    hollow_radius_mm,
+    inner_thickness,
+    cutout_lat_min,
+    cutout_lat_max,
+    cutout_lon_max,
+    segment_lon_max
+)
+
+water_shapes = [outer_shell, inner_south, inner_north, inner_east]
 land_shapes = []
 snow_shapes = []
+
+# Create tab on eastern edge (highest longitude)
+# Tab starts at hollow_radius_mm and extends by half the shell thickness
+tab_lat_center = (segment_lat_min + segment_lat_max) / 2.0
+tab_lat_min = tab_lat_center - (tab_size_degrees / 2.0)
+tab_lat_max = tab_lat_center + (tab_size_degrees / 2.0)
+tab_lon_min = segment_lon_max
+tab_lon_max = segment_lon_max + tab_size_degrees
+
+tab = make_sphere_patch(
+    hollow_radius_mm,
+    inner_thickness,
+    tab_lat_min,
+    tab_lat_max,
+    tab_lon_min,
+    tab_lon_max
+)
+water_shapes.append(tab)
 
 # Process cells
 for cell in cells:
