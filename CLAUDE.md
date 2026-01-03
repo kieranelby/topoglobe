@@ -115,7 +115,9 @@ Format: `{N|S}{lat_min}-{lat_max}_E{lon_min}-{lon_max}`
 ## Performance Notes
 
 - Vectorized elevation sampling takes ~2 seconds for 40,000+ cells
-- Per-segment processing: ~8 seconds without snow, ~10 seconds with snow
-- FreeCAD mesh generation: ~2 seconds per segment
-- Total for all 48 segments: 5-10 minutes
-- Memory usage is low (~200 MB) due to per-segment processing
+- Per-segment data processing: ~5 seconds
+- FreeCAD mesh generation with multiFuse: ~50-55 seconds per segment (bottleneck)
+- Total per segment: ~60 seconds
+- Total for all 48 segments: ~50-60 minutes
+- FreeCAD RAM usage: ~6 GB (resident) during geometry operations
+- Python data processing RAM usage: ~200 MB

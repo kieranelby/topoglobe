@@ -213,14 +213,15 @@ If you get this error, the FreeCAD executable is not in your PATH:
 ### Performance
 
 **Processing Time:**
-- Per segment: ~8 seconds (without snow) / ~10 seconds (with snow)
-- All 48 segments: ~5-10 minutes total
-- Elevation sampling is vectorized and very fast (~2 seconds)
+- Per segment: ~60 seconds (FreeCAD mesh generation with multiFuse is the bottleneck)
+- All 48 segments: ~50-60 minutes total
+- Data processing is fast: elevation sampling ~2 seconds, cell processing ~5 seconds
+- FreeCAD geometry and mesh generation: ~50-55 seconds per segment
 
 **Memory Usage:**
-- Per-segment processing uses minimal memory (~200 MB)
-- No need for large global grid in memory
-- If you encounter memory issues, reduce `step_deg` in config.yaml
+- FreeCAD process uses ~6 GB RAM (resident) during mesh generation
+- Python data processing uses minimal memory (~200 MB)
+- Ensure you have adequate RAM available for FreeCAD's geometry kernel
 
 ### 3MF File Size
 
