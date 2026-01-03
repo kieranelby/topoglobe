@@ -127,71 +127,58 @@ cutout_upper_lat_max = cutout_upper_lat_center + (cutout_size_degrees / 2.0)
 cutout_lon_min = segment_lon_min
 cutout_lon_max = segment_lon_min + cutout_size_degrees
 
-# Split shell approach: create outer and inner layers separately
-inner_thickness = shell_thickness_mm / 2.0
-outer_thickness = shell_thickness_mm / 2.0
-
-# Outer shell layer (full segment, no cutout)
-outer_shell = make_sphere_patch(
-    hollow_radius_mm + inner_thickness,
-    outer_thickness,
-    segment_lat_min,
-    segment_lat_max,
-    segment_lon_min,
-    segment_lon_max
-)
-
-# Inner shell layer - south patch (below lower cutout)
-inner_south = make_sphere_patch(
+# Create full-thickness shell patches with cutouts for tabs
+# South patch (below lower cutout)
+shell_south = make_sphere_patch(
     hollow_radius_mm,
-    inner_thickness,
+    shell_thickness_mm,
     segment_lat_min,
     cutout_lower_lat_min,
     segment_lon_min,
     segment_lon_max
 )
 
-# Inner shell layer - center patch (between two cutouts)
-inner_center = make_sphere_patch(
+# Center patch (between two cutouts)
+shell_center = make_sphere_patch(
     hollow_radius_mm,
-    inner_thickness,
+    shell_thickness_mm,
     cutout_lower_lat_max,
     cutout_upper_lat_min,
     segment_lon_min,
     segment_lon_max
 )
 
-# Inner shell layer - north patch (above upper cutout)
-inner_north = make_sphere_patch(
+# North patch (above upper cutout)
+shell_north = make_sphere_patch(
     hollow_radius_mm,
-    inner_thickness,
+    shell_thickness_mm,
     cutout_upper_lat_max,
     segment_lat_max,
     segment_lon_min,
     segment_lon_max
 )
 
-# Inner shell layer - east-lower patch (right of lower cutout)
-inner_east_lower = make_sphere_patch(
+# East-lower patch (right of lower cutout)
+shell_east_lower = make_sphere_patch(
     hollow_radius_mm,
-    inner_thickness,
+    shell_thickness_mm,
     cutout_lower_lat_min,
     cutout_lower_lat_max,
     cutout_lon_max,
     segment_lon_max
 )
 
-# Inner shell layer - east-upper patch (right of upper cutout)
-inner_east_upper = make_sphere_patch(
+# East-upper patch (right of upper cutout)
+shell_east_upper = make_sphere_patch(
     hollow_radius_mm,
-    inner_thickness,
+    shell_thickness_mm,
     cutout_upper_lat_min,
     cutout_upper_lat_max,
     cutout_lon_max,
     segment_lon_max
 )
 
-water_shapes = [outer_shell, inner_south, inner_center, inner_north, inner_east_lower, inner_east_upper]
+water_shapes = [shell_south, shell_center, shell_north, shell_east_lower, shell_east_upper]
 land_shapes = []
 snow_shapes = []
 
