@@ -208,6 +208,50 @@ Edit `config.yaml` to adjust detail level:
 
 Shell patches automatically use ~1° angular subdivision for professional-quality smooth surfaces. To adjust, edit `globe_generator/mesh_generator.py` line 196-197.
 
+## Testing
+
+The project includes comprehensive test coverage with 33 tests.
+
+### Quick Start
+
+```bash
+# Install dev dependencies
+pip install -r requirements-dev.txt
+
+# Run all tests
+venv/bin/python3 -m pytest tests/ -v
+
+# Run only fast unit tests (no data files required)
+venv/bin/python3 -m pytest tests/ -v -m "not integration"
+```
+
+### Test Categories
+
+**Unit Tests (25 tests)** - Fast, no data files required
+- Configuration loading
+- Grid generation algorithms
+- Coordinate conversions
+- Segment definitions
+
+**Integration Tests (8 tests)** - Require ETOPO1/MODIS data files
+- Full pipeline testing
+- Data loading and processing
+- Segment cell generation
+- Cross-segment consistency
+
+Integration tests automatically skip if data files are not present.
+
+### Code Quality
+
+```bash
+# Run linters
+./lint.sh
+
+# Or individually
+venv/bin/python3 -m ruff check .
+venv/bin/python3 -m mypy globe_generator/*.py *.py
+```
+
 ## License
 
 This project is provided as-is for personal and educational use.
