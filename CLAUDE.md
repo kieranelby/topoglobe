@@ -30,16 +30,14 @@ pip install -r requirements-dev.txt
 
 ### Testing
 ```bash
-# Run all tests (unit + integration)
-venv/bin/python3 -m pytest tests/ -v
-
 # Run only unit tests (fast, no data files required)
 venv/bin/python3 -m pytest tests/ -v -m "not integration"
 
 # Run only integration tests (requires data files)
 venv/bin/python3 -m pytest tests/ -v -m integration
-# Or use the friendly wrapper:
-python3 test_data_processing.py
+
+# Run all tests (unit + integration)
+venv/bin/python3 -m pytest tests/ -v
 
 # Run with coverage report
 venv/bin/python3 -m pytest tests/ --cov=globe_generator --cov-report=term-missing
@@ -53,21 +51,6 @@ python3 globe.py -s N60-90_E000-090 --snow
 # Generate all 48 segments (~5-10 minutes)
 python3 globe.py
 ```
-
-Test suite:
-
-**Unit tests** (25 tests, fast, no data files required):
-- **test_grid_builder.py**: Equal-area grid generation logic
-- **test_spherical_geometry.py**: Coordinate conversions and mesh utilities
-- **test_segment_generator.py**: Globe segment definitions and coverage
-- **test_config.py**: Configuration loading from YAML
-
-**Integration tests** (9 tests, require data files):
-- **test_integration.py**: Full pipeline testing with real ETOPO1/MODIS data
-  - Dataset loading and elevation range computation
-  - Segment cell processing and boundary alignment
-  - Snow data processing
-  - Cross-segment consistency
 
 ### Linting
 ```bash
@@ -167,3 +150,44 @@ Format: `{N|S}{lat_min}-{lat_max}_{E|W}{lon_min}-{lon_max}`
 - Total for all 48 segments: ~50-60 minutes
 - FreeCAD RAM usage: ~6 GB (resident) during geometry operations
 - Python data processing RAM usage: ~200 MB
+
+## Test Suite
+
+The project has comprehensive test coverage with 33 tests divided into unit and integration tests.
+
+### Unit Tests (25 tests)
+Fast tests that don't require data files. Run these frequently during development:
+
+```bash
+venv/bin/python3 -m pytest tests/ -v -m "not integration"
+```
+
+Coverage:
+- **test_config.py** (4 tests): Configuration loading from YAML
+- **test_grid_builder.py** (5 tests): Equal-area grid generation
+- **test_spherical_geometry.py** (10 tests): Coordinate conversions and mesh utilities
+- **test_segment_generator.py** (6 tests): Globe segment definitions and structure
+
+### Integration Tests (8 tests)
+Tests the full pipeline with real ETOPO1 and MODIS data. Requires data files in `./data/`:
+
+```bash
+venv/bin/python3 -m pytest tests/ -v -m integration
+```
+
+Coverage:
+- **test_integration.py**: Full data processing pipeline
+  - Dataset loading (ETOPO1, MODIS)
+  - Global elevation range computation
+  - Segment cell processing
+  - Cell boundary alignment
+  - Snow data processing
+  - Cross-segment consistency
+
+### Running All Tests
+
+```bash
+venv/bin/python3 -m pytest tests/ -v
+```
+
+All 33 tests should pass. Integration tests will be skipped if data files are not present.
