@@ -1,6 +1,3 @@
-# Large geospatial data files
-data/
-
 # Python
 __pycache__/
 *.py[cod]
@@ -8,17 +5,24 @@ __pycache__/
 *.so
 .Python
 venv/
-.pycharmvenv/
+.pytest_cache/
+.coverage
+htmlcov/
 *.egg-info/
+dist/
+build/
+
+# Data files (large)
+data/*.grd
+data/*.tif
 
 # Output files
 output/
+*.3mf
 
 # IDE
-.idea/
 .vscode/
-.claude/
-
-# OS
-.DS_Store
-Thumbs.db
+.idea/
+*.swp
+*.swo
+*~
