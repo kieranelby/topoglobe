@@ -30,14 +30,19 @@ pip install -r requirements-dev.txt
 
 ### Testing
 ```bash
-# Run unit tests
+# Run all tests (unit + integration)
 venv/bin/python3 -m pytest tests/ -v
+
+# Run only unit tests (fast, no data files required)
+venv/bin/python3 -m pytest tests/ -v -m "not integration"
+
+# Run only integration tests (requires data files)
+venv/bin/python3 -m pytest tests/ -v -m integration
+# Or use the friendly wrapper:
+python3 test_data_processing.py
 
 # Run with coverage report
 venv/bin/python3 -m pytest tests/ --cov=globe_generator --cov-report=term-missing
-
-# Run integration test (tests full data processing pipeline)
-python3 test_data_processing.py
 
 # Generate single test segment
 python3 globe.py -s N60-90_E000-090
@@ -49,11 +54,20 @@ python3 globe.py -s N60-90_E000-090 --snow
 python3 globe.py
 ```
 
-Test coverage:
+Test suite:
+
+**Unit tests** (25 tests, fast, no data files required):
 - **test_grid_builder.py**: Equal-area grid generation logic
 - **test_spherical_geometry.py**: Coordinate conversions and mesh utilities
 - **test_segment_generator.py**: Globe segment definitions and coverage
 - **test_config.py**: Configuration loading from YAML
+
+**Integration tests** (9 tests, require data files):
+- **test_integration.py**: Full pipeline testing with real ETOPO1/MODIS data
+  - Dataset loading and elevation range computation
+  - Segment cell processing and boundary alignment
+  - Snow data processing
+  - Cross-segment consistency
 
 ### Linting
 ```bash

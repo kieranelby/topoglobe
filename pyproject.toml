@@ -95,6 +95,9 @@ addopts = [
     "--strict-markers",
     "--strict-config",
 ]
+markers = [
+    "integration: marks tests as integration tests (require data files, slower)",
+]
 
 [tool.coverage.run]
 source = ["globe_generator"]
