@@ -30,7 +30,13 @@ pip install -r requirements-dev.txt
 
 ### Testing
 ```bash
-# Run data processing test (no FreeCAD required)
+# Run unit tests
+venv/bin/python3 -m pytest tests/ -v
+
+# Run with coverage report
+venv/bin/python3 -m pytest tests/ --cov=globe_generator --cov-report=term-missing
+
+# Run integration test (tests full data processing pipeline)
 python3 test_data_processing.py
 
 # Generate single test segment
@@ -42,6 +48,12 @@ python3 globe.py -s N60-90_E000-090 --snow
 # Generate all 48 segments (~5-10 minutes)
 python3 globe.py
 ```
+
+Test coverage:
+- **test_grid_builder.py**: Equal-area grid generation logic
+- **test_spherical_geometry.py**: Coordinate conversions and mesh utilities
+- **test_segment_generator.py**: Globe segment definitions and coverage
+- **test_config.py**: Configuration loading from YAML
 
 ### Linting
 ```bash
