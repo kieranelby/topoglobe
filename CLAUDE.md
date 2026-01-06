@@ -144,9 +144,9 @@ Format: `{N|S}{lat_min}-{lat_max}_{E|W}{lon_min}-{lon_max}`
 
 ## Test Suite
 
-The project has comprehensive test coverage with 33 tests divided into unit and integration tests.
+The project has comprehensive test coverage with 32 tests divided into unit and integration tests.
 
-### Unit Tests (25 tests)
+### Unit Tests (24 tests)
 Fast tests that don't require data files. Run these frequently during development:
 
 ```bash
@@ -154,7 +154,7 @@ venv/bin/python3 -m pytest tests/ -v -m "not integration"
 ```
 
 Coverage:
-- **test_config.py** (4 tests): Configuration loading from YAML
+- **test_config.py** (3 tests): Configuration loading from YAML
 - **test_grid_builder.py** (5 tests): Equal-area grid generation
 - **test_spherical_geometry.py** (10 tests): Coordinate conversions and mesh utilities
 - **test_segment_generator.py** (6 tests): Globe segment definitions and structure
@@ -181,4 +181,4 @@ Coverage:
 venv/bin/python3 -m pytest tests/ -v
 ```
 
-All 33 tests should pass. Integration tests will be skipped if data files are not present.
+All 32 tests should pass. Integration tests will be skipped if data files are not present.

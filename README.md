@@ -204,7 +204,7 @@ Shell patches automatically use ~1° angular subdivision for professional-qualit
 
 ## Testing
 
-The project includes comprehensive test coverage with 33 tests.
+The project includes comprehensive test coverage with 32 tests.
 
 ### Quick Start
 
@@ -221,7 +221,7 @@ venv/bin/python3 -m pytest tests/ -v -m "not integration"
 
 ### Test Categories
 
-**Unit Tests (25 tests)** - Fast, no data files required
+**Unit Tests (24 tests)** - Fast, no data files required
 - Configuration loading
 - Grid generation algorithms
 - Coordinate conversions
