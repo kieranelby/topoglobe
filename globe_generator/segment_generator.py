@@ -1,10 +1,10 @@
 """Globe segment generation for 3D printing."""
 
-from typing import List
+
 from .config import SegmentDefinition
 
 
-def generate_segment_definitions() -> List[SegmentDefinition]:
+def generate_segment_definitions() -> list[SegmentDefinition]:
     """
     Generate 48 globe segments for printing.
 
@@ -36,15 +36,9 @@ def generate_segment_definitions() -> List[SegmentDefinition]:
 
             # Create segment ID
             # Use N/S/E/W prefix and absolute latitude values
-            if lat_min >= 0:
-                lat_prefix = "N"
-            else:
-                lat_prefix = "S"
+            lat_prefix = "N" if lat_min >= 0 else "S"
 
-            if lon_min >= 0:
-                lon_prefix = "E"
-            else:
-                lon_prefix = "W"
+            lon_prefix = "E" if lon_min >= 0 else "W"
 
             segment_id = (
                 f"{lat_prefix}{abs(lat_min):02d}-{abs(lat_max):02d}_"

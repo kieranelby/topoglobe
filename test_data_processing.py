@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """Test data processing without FreeCAD dependency."""
 
-import sys
-from pathlib import Path
+
+import logging
 
 from globe_generator.config import GlobeConfig
 from globe_generator.data_processor import DataProcessor
 from globe_generator.segment_generator import generate_segment_definitions
 
-import logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 

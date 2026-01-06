@@ -1,8 +1,7 @@
 """Configuration classes for globe generation."""
 
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Optional
+
 import yaml
 
 
@@ -12,7 +11,7 @@ class GlobeConfig:
 
     # Data paths
     etopo_path: str
-    snow_path: Optional[str]
+    snow_path: str | None
 
     # Globe parameters
     radius_mm: float
@@ -29,13 +28,13 @@ class GlobeConfig:
     output_dir: str
 
     # Computed values (set during data processing)
-    core_radius_mm: Optional[float] = None
-    hollow_radius_mm: Optional[float] = None
+    core_radius_mm: float | None = None
+    hollow_radius_mm: float | None = None
 
     @classmethod
     def from_yaml(cls, yaml_path: str) -> "GlobeConfig":
         """Load configuration from YAML file."""
-        with open(yaml_path, 'r') as f:
+        with open(yaml_path) as f:
             data = yaml.safe_load(f)
 
         return cls(

@@ -1,8 +1,8 @@
 """3MF export functionality for FreeCAD documents."""
 
-import sys
-import os
 import logging
+import os
+import sys
 from pathlib import Path
 
 # Add FreeCAD to path
@@ -20,16 +20,15 @@ for path in freecad_paths:
 
 try:
     import FreeCAD as App
-    import Part
     import Mesh
     import MeshPart
+    import Part
 except ImportError:
     raise ImportError(
         "FreeCAD not found. Install with: sudo apt install freecad python3-freecad"
     )
 
 from .config import SegmentDefinition
-
 
 logger = logging.getLogger(__name__)
 

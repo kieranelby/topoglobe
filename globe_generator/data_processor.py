@@ -1,15 +1,14 @@
 """Data processing for elevation and snow data."""
 
+import logging
+
 import numpy as np
 import polars as pl
-import xarray as xr
 import rasterio
-from typing import Optional
-import logging
+import xarray as xr
 
 from .config import GlobeConfig, SegmentDefinition
 from .grid_builder import build_equal_area_grid
-
 
 logger = logging.getLogger(__name__)
 

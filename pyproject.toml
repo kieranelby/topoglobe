@@ -1,0 +1,86 @@
+[tool.ruff]
+# Set line length
+line-length = 120
+
+# Exclude common directories
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+# Assume Python 3.12
+target-version = "py312"
+
+[tool.ruff.lint]
+# Enable pycodestyle, pyflakes, isort, and other useful rules
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort (import sorting)
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "RET",    # flake8-return
+]
+
+# Ignore specific rules that might be too strict
+ignore = [
+    "E501",   # Line too long (let formatter handle this)
+    "B008",   # Do not perform function call in argument defaults
+    "B905",   # zip() without strict= (not needed for Python < 3.10 compat)
+    "RET504", # Unnecessary assignment before return
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["globe_generator"]
+
+[tool.ruff.lint.per-file-ignores]
+# Allow unused imports in __init__.py files
+"__init__.py" = ["F401"]
+# Allow dynamic imports and exception patterns in exporter
+"globe_generator/exporter.py" = ["E402", "F401", "B904"]
+# Allow mathematical variable naming conventions
+"globe_generator/grid_builder.py" = ["N806"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = false  # Too noisy with libraries like polars
+warn_unused_configs = true
+disallow_untyped_defs = false  # Start lenient, can be stricter later
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = false  # Can be re-enabled later
+no_implicit_optional = true
+
+# Ignore missing imports for libraries without type stubs
+[[tool.mypy.overrides]]
+module = [
+    "rasterio.*",
+    "trimesh.*",
+    "polars.*",
+    "scipy.*",
+    "networkx.*",
+    "FreeCAD",
+    "Part",
+    "Mesh",
+    "MeshPart",
+]
+ignore_missing_imports = true
+
+# Ignore Polars type issues - their type stubs have known issues
+[[tool.mypy.overrides]]
+module = "globe_generator.data_processor"
+disable_error_code = ["operator", "index", "attr-defined", "arg-type", "assignment"]
+
+# Ignore Optional[float] type issues - these are always initialized before use
+[[tool.mypy.overrides]]
+module = "globe_generator.mesh_generator"
+disable_error_code = ["arg-type", "operator"]

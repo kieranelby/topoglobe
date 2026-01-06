@@ -1,15 +1,15 @@
 """Pure-Python mesh generation using trimesh."""
 
-import numpy as np
-import trimesh
-import polars as pl
-import math
 import logging
+import math
 from pathlib import Path
-from typing import List, Optional, Tuple
+
+import numpy as np
+import polars as pl
+import trimesh
 
 from .config import GlobeConfig, SegmentDefinition
-from .spherical_geometry import latlon_to_cartesian, create_quad_triangles, calculate_subdivision
+from .spherical_geometry import calculate_subdivision, create_quad_triangles, latlon_to_cartesian
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +28,8 @@ class SphericalPatchMeshBuilder:
         lat_max: float,
         lon_min: float,
         lon_max: float,
-        lat_subdivisions: Optional[int] = None,
-        lon_subdivisions: Optional[int] = None
+        lat_subdivisions: int | None = None,
+        lon_subdivisions: int | None = None
     ) -> trimesh.Trimesh:
         """
         Generate triangulated spherical shell patch.
@@ -149,7 +149,7 @@ class SphericalPatchMeshBuilder:
 
         return trimesh.Trimesh(vertices=np.array(vertices), faces=np.array(faces))
 
-    def create_shell_patches(self, segment: SegmentDefinition) -> List[trimesh.Trimesh]:
+    def create_shell_patches(self, segment: SegmentDefinition) -> list[trimesh.Trimesh]:
         """
         Create 5 shell patches with cutouts for tabs.
 
@@ -173,7 +173,6 @@ class SphericalPatchMeshBuilder:
 
         # Adjust longitude span to match latitude-adjusted tabs
         cutout_lower_lon_span = tab_size_degrees / max(0.1, math.cos(math.radians(cutout_lower_lat_center)))
-        cutout_lower_lon_min = segment.lon_min
         cutout_lower_lon_max = segment.lon_min + cutout_lower_lon_span
 
         # Upper cutout (at 2/3 height)
@@ -183,7 +182,6 @@ class SphericalPatchMeshBuilder:
 
         # Adjust longitude span for this cutout's latitude
         cutout_upper_lon_span = tab_size_degrees / max(0.1, math.cos(math.radians(cutout_upper_lat_center)))
-        cutout_upper_lon_min = segment.lon_min
         cutout_upper_lon_max = segment.lon_min + cutout_upper_lon_span
 
         # Helper function to calculate subdivisions for shell patches
@@ -276,7 +274,7 @@ class SphericalPatchMeshBuilder:
 
         return patches
 
-    def create_tab_patches(self, segment: SegmentDefinition) -> List[trimesh.Trimesh]:
+    def create_tab_patches(self, segment: SegmentDefinition) -> list[trimesh.Trimesh]:
         """
         Create 2 tab patches on eastern edge.
 
@@ -363,7 +361,7 @@ class SphericalPatchMeshBuilder:
         lon_max: float,
         r_base: float,
         height_mm: float
-    ) -> Optional[trimesh.Trimesh]:
+    ) -> trimesh.Trimesh | None:
         """
         Create single elevation relief patch.
 
@@ -424,10 +422,9 @@ def calculate_rotation_to_north_pole(segment: SegmentDefinition) -> np.ndarray:
         # Already aligned or opposite direction
         if np.dot(from_vec, to_vec) > 0:
             return np.eye(4)  # Already aligned
-        else:
-            # 180 degree rotation needed - use arbitrary perpendicular axis
-            axis = np.array([1, 0, 0])
-            angle = np.pi
+        # 180 degree rotation needed - use arbitrary perpendicular axis
+        axis = np.array([1, 0, 0])
+        angle = np.pi
     else:
         axis = axis / axis_len
         angle = np.arccos(np.clip(np.dot(from_vec, to_vec), -1.0, 1.0))
@@ -437,9 +434,9 @@ def calculate_rotation_to_north_pole(segment: SegmentDefinition) -> np.ndarray:
 
 
 def export_segment_3mf(
-    water_mesh: Optional[trimesh.Trimesh],
-    land_mesh: Optional[trimesh.Trimesh],
-    snow_mesh: Optional[trimesh.Trimesh],
+    water_mesh: trimesh.Trimesh | None,
+    land_mesh: trimesh.Trimesh | None,
+    snow_mesh: trimesh.Trimesh | None,
     segment_id: str,
     output_path: Path
 ) -> None:
@@ -596,9 +593,8 @@ def generate_segment_mesh(
         # Verify output file was created
         if output_path.exists() and output_path.stat().st_size > 0:
             return True
-        else:
-            logger.error(f"Output file not created or empty: {output_path}")
-            return False
+        logger.error(f"Output file not created or empty: {output_path}")
+        return False
 
     except Exception as e:
         logger.error(f"Error generating mesh: {e}", exc_info=True)

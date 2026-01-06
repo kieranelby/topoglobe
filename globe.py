@@ -8,15 +8,15 @@ Usage:
     python3 globe.py --snow             # Enable snow layer
 """
 
-import sys
-import logging
 import argparse
+import logging
+import sys
 from pathlib import Path
 
 from globe_generator.config import GlobeConfig
 from globe_generator.data_processor import DataProcessor
-from globe_generator.segment_generator import generate_segment_definitions
 from globe_generator.mesh_generator import generate_segment_mesh
+from globe_generator.segment_generator import generate_segment_definitions
 
 
 def setup_logging(verbose: bool):
@@ -127,7 +127,7 @@ def main():
                 logger.info(f"  {len(segment_cells)} cells in segment")
 
                 if len(segment_cells) == 0:
-                    logger.warning(f"  Skipping - no cells in segment")
+                    logger.warning("  Skipping - no cells in segment")
                     continue
 
                 # Output path
@@ -146,7 +146,7 @@ def main():
                     logger.info(f"  ✓ Exported ({file_size:.1f} KB)")
                     success_count += 1
                 else:
-                    logger.error(f"  ✗ Failed to export")
+                    logger.error("  ✗ Failed to export")
                     fail_count += 1
 
             except Exception as e:

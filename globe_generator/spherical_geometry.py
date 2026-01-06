@@ -1,10 +1,10 @@
 """Spherical geometry utilities for mesh generation."""
 
+
 import numpy as np
-from typing import Tuple, List
 
 
-def spherical_to_cartesian(theta: float, phi: float, r: float) -> Tuple[float, float, float]:
+def spherical_to_cartesian(theta: float, phi: float, r: float) -> tuple[float, float, float]:
     """
     Convert spherical coordinates to Cartesian.
 
@@ -22,7 +22,7 @@ def spherical_to_cartesian(theta: float, phi: float, r: float) -> Tuple[float, f
     return float(x), float(y), float(z)
 
 
-def latlon_to_cartesian(lat_deg: float, lon_deg: float, r: float) -> Tuple[float, float, float]:
+def latlon_to_cartesian(lat_deg: float, lon_deg: float, r: float) -> tuple[float, float, float]:
     """
     Convert latitude/longitude to Cartesian coordinates.
 
@@ -39,7 +39,7 @@ def latlon_to_cartesian(lat_deg: float, lon_deg: float, r: float) -> Tuple[float
     return spherical_to_cartesian(theta, phi, r)
 
 
-def create_quad_triangles(v1_idx: int, v2_idx: int, v3_idx: int, v4_idx: int) -> List[List[int]]:
+def create_quad_triangles(v1_idx: int, v2_idx: int, v3_idx: int, v4_idx: int) -> list[list[int]]:
     """
     Create two triangles from quad vertices with CCW winding.
 
@@ -63,7 +63,7 @@ def calculate_subdivision(
     lat_center_deg: float,
     radius_mm: float,
     target_edge_mm: float = 2.0
-) -> Tuple[int, int]:
+) -> tuple[int, int]:
     """
     Calculate appropriate subdivision count based on physical patch size.
 

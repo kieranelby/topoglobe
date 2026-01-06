@@ -20,6 +20,9 @@ freecad --version
 # Install Python dependencies
 pip install -r requirements.txt
 
+# Install development dependencies (linters)
+pip install -r requirements-dev.txt
+
 # Download required data files
 # Place ETOPO1_Bed_g_gmt4.grd and MOD10CM_snow_2024-153.tif in data/
 # See data/README.md for download links and details
@@ -39,6 +42,23 @@ python3 globe.py -s N60-90_E000-090 --snow
 # Generate all 48 segments (~5-10 minutes)
 python3 globe.py
 ```
+
+### Linting
+```bash
+# Run all linters
+./lint.sh
+
+# Or run individually
+venv/bin/python3 -m ruff check .          # Style and code quality
+venv/bin/python3 -m ruff check --fix .    # Auto-fix issues
+venv/bin/python3 -m mypy globe_generator/*.py *.py  # Type checking
+```
+
+Configured linters:
+- **ruff**: Fast all-in-one linter (replaces flake8, isort, pyupgrade)
+- **mypy**: Static type checker
+
+Configuration is in `pyproject.toml`.
 
 ### Configuration
 Edit `config.yaml` to set data paths and globe parameters. Key parameters:

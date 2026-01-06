@@ -1,7 +1,7 @@
 """Equal-area grid generation for globe surface."""
 
+
 import numpy as np
-from typing import List, Tuple
 
 
 def build_equal_area_grid(
@@ -10,7 +10,7 @@ def build_equal_area_grid(
     min_lon_deg: float,
     max_lon_deg: float,
     step_deg: float
-) -> List[Tuple[float, float, float, float, float, float]]:
+) -> list[tuple[float, float, float, float, float, float]]:
     """
     Generate equal-area grid cells on a sphere.
 
