@@ -10,13 +10,6 @@ This project generates 3D-printable topographic globe segments from elevation da
 
 ### Setup
 ```bash
-# Install FreeCAD (required) - any method works
-sudo snap install freecad
-# OR: sudo apt install freecad
-
-# Verify FreeCAD executable
-freecad --version
-
 # Install Python dependencies
 pip install -r requirements.txt
 
@@ -85,7 +78,7 @@ Edit `config.yaml` to set data paths and globe parameters. Key parameters:
    - Vectorized elevation sampling (all cells interpolated in single xarray call)
    - Sample snow coverage if enabled
    - Calculate physical heights (water/land/snow layers)
-4. **FreeCAD subprocess export** (`freecad_subprocess.py`): Generate 3MF with separate mesh objects
+4. **Mesh generation** (`mesh_generator.py`): Generate 3MF with separate mesh objects using trimesh
 
 ### Critical Design Decisions
 
@@ -95,9 +88,9 @@ Edit `config.yaml` to set data paths and globe parameters. Key parameters:
 
 **Global Elevation Range**: The min/max elevation is computed once globally and used for all segments. This ensures consistent height scaling so all segments have the same vertical reference frame.
 
-**Multi-Color 3MF Export**: Water, land, and snow are exported as separate `Mesh::Feature` objects in the 3MF file (not merged into a compound). This allows slicers to assign different colors for multi-color printing.
+**Multi-Color 3MF Export**: Water, land, and snow are exported as separate mesh objects in the 3MF file (not merged into a single compound). This allows slicers to assign different colors for multi-color printing.
 
-**FreeCAD Subprocess Architecture**: FreeCAD runs in console mode (`freecad --console script.py`) as a subprocess. The script is generated dynamically and includes explicit `sys.exit(0)` to ensure clean termination. Success is detected by checking if the output file exists (not by stdout message, which doesn't reliably pass through FreeCAD's console mode).
+**Pure-Python Mesh Generation**: Uses trimesh library for efficient mesh creation. Spherical patches are generated using lat/lon grids, converted to triangulated meshes, and exported directly to 3MF format.
 
 ### Segment Naming Convention
 Format: `{N|S}{lat_min}-{lat_max}_{E|W}{lon_min}-{lon_max}`
@@ -122,16 +115,14 @@ Format: `{N|S}{lat_min}-{lat_max}_{E|W}{lon_min}-{lon_max}`
 - `build_equal_area_grid()`: Creates latitude bands with adaptive longitude divisions to maintain roughly equal cell surface area
 - Takes segment boundaries as input to align grid edges
 
-**freecad_subprocess.py**: FreeCAD geometry generation
-- `generate_freecad_script()`: Dynamically creates Python script with embedded cell data
-- Script creates separate Part objects for water/land/snow, converts to Mesh objects, exports via `Mesh.export()`
-- `generate_segment_with_subprocess()`: Removes old output file before running to ensure fresh detection, checks file existence for success
+**mesh_generator.py**: Pure-Python mesh generation using trimesh
+- `SphericalPatchMeshBuilder.create_patch()`: Creates triangulated spherical shell patches
+- `generate_segment_mesh()`: Orchestrates mesh generation for shell, tabs, and elevation relief
+- Exports separate mesh objects for water/land/snow to 3MF format
 
 **segment_generator.py**: Defines the 48 segment boundaries based on latitude bands
 
 ## Common Pitfalls
-
-**FreeCAD Executable**: FreeCAD must be accessible in PATH as `freecad`. Any installation method works (snap, apt, PPA) since we use it as a subprocess, not as a Python library.
 
 **Snow Flag Logic**: Snow is disabled by default. The flag is `--snow` to enable (not `--no-snow` to disable). Code checks `if not args.snow: config.snow_path = None`.
 
@@ -139,17 +130,17 @@ Format: `{N|S}{lat_min}-{lat_max}_{E|W}{lon_min}-{lon_max}`
 
 **Elevation Scaling**: All segments must use the same `global_min_elevation` and `elevation_to_mm` scaling factor. Never compute these per-segment or the vertical heights won't match between segments.
 
-**3MF Object Separation**: When exporting, each layer (water/land/snow) must be a separate Mesh::Feature object passed to `Mesh.export()`. Do not merge into a single compound or they'll be one object in the 3MF.
+**3MF Object Separation**: When exporting, each layer (water/land/snow) must be a separate mesh object in the 3MF scene. Do not merge into a single compound or they'll be one object in the 3MF.
 
 ## Performance Notes
 
 - Vectorized elevation sampling takes ~2 seconds for 40,000+ cells
 - Per-segment data processing: ~5 seconds
-- FreeCAD mesh generation with multiFuse: ~50-55 seconds per segment (bottleneck)
-- Total per segment: ~60 seconds
-- Total for all 48 segments: ~50-60 minutes
-- FreeCAD RAM usage: ~6 GB (resident) during geometry operations
-- Python data processing RAM usage: ~200 MB
+- Trimesh mesh generation: ~3-5 seconds per segment
+- Total per segment: ~10-12 seconds
+- Total for all 48 segments: ~9-10 minutes
+- Python/trimesh RAM usage: ~500 MB during mesh generation
+- Data processing RAM usage: ~200 MB
 
 ## Test Suite
 

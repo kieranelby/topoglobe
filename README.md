@@ -157,8 +157,7 @@ globe_generator/
 ├── data_processor.py      # Elevation and snow data processing
 ├── segment_generator.py   # 48-segment definition
 ├── mesh_generator.py      # Pure-Python mesh generation using trimesh
-├── spherical_geometry.py  # Spherical coordinate and geometry utilities
-└── freecad_subprocess.py.backup  # Legacy FreeCAD implementation (archived)
+└── spherical_geometry.py  # Spherical coordinate and geometry utilities
 ```
 
 **Key Features:**
@@ -181,15 +180,10 @@ globe_generator/
 - Typical segment: 8,000-9,000 cells
 - High detail capture of elevation features
 
-**Comparison to Previous FreeCAD Implementation:**
-- **5-6x faster** per segment at same resolution (10s vs 60s)
-- **Much higher detail** possible due to efficient mesh generation
-- Previous implementation at this resolution would take hours
-
 **Memory Usage:**
 - Python process uses ~500 MB RAM during mesh generation
 - Data processing uses minimal memory (~200 MB)
-- Total peak usage: < 1 GB (vs 6 GB with FreeCAD)
+- Total peak usage: < 1 GB
 
 ### 3MF File Size
 

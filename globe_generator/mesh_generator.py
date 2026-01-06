@@ -153,7 +153,8 @@ class SphericalPatchMeshBuilder:
         """
         Create 5 shell patches with cutouts for tabs.
 
-        Replicates the logic from freecad_subprocess.py lines 112-187.
+        Creates a hollow spherical shell divided into 5 patches to accommodate
+        dual tabs on the eastern edge and corresponding cutouts on the western edge.
 
         Returns:
             List of 5 mesh patches (south, center, north, east-lower, east-upper)
@@ -392,7 +393,8 @@ def calculate_rotation_to_north_pole(segment: SegmentDefinition) -> np.ndarray:
     """
     Calculate 4x4 transformation matrix to rotate segment to north pole orientation.
 
-    Replicates FreeCAD's rotation logic from freecad_subprocess.py lines 299-320.
+    Rotates the segment so that its center point aligns with the north pole (0, 0, 1).
+    This allows printing the segment flat with the pole at the top.
 
     Args:
         segment: Segment definition with lat/lon boundaries
@@ -489,7 +491,8 @@ def generate_segment_mesh(
     """
     Generate segment mesh and export to 3MF.
 
-    Replaces generate_segment_with_subprocess() from freecad_subprocess.py
+    Creates a complete segment mesh including hollow shell, tabs, and elevation relief
+    for water, land, and snow layers. Exports as multi-object 3MF for multi-color printing.
 
     Args:
         cells_df: DataFrame with cell data (water/land/snow heights)
@@ -515,7 +518,7 @@ def generate_segment_mesh(
 
         core_radius_mm = config.core_radius_mm
 
-        # Build elevation relief patches (replicate lines 238-262 from FreeCAD script)
+        # Build elevation relief patches for each grid cell
         for row in cells_df.iter_rows(named=True):
             water_height_mm = float(row['water_height_mm']) if not math.isnan(row['water_height_mm']) else 0.0
             land_height_mm = float(row['land_height_mm']) if not math.isnan(row['land_height_mm']) else 0.0

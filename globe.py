@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate 3D-printable globe segments using FreeCAD.
+Generate 3D-printable globe segments using pure-Python mesh generation.
 
 Usage:
     python3 globe.py                    # Generate all 48 segments (no snow)
