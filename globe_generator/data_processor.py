@@ -66,7 +66,7 @@ class DataProcessor:
 
         Returns:
             DataFrame with columns: lat_a_deg, lat_b_deg, lat_centre_deg,
-            lng_a_deg, lng_b_deg, lng_centre_deg, elevation, snow_fraction,
+            lon_a_deg, lon_b_deg, lon_centre_deg, elevation, snow_fraction,
             water_height_mm, land_height_mm, snow_height_mm
         """
         # Generate equal-area grid for full globe
@@ -74,8 +74,8 @@ class DataProcessor:
         cells = build_equal_area_grid(
             min_lat_deg=-90.0,
             max_lat_deg=90.0,
-            min_lng_deg=-180.0,
-            max_lng_deg=180.0,
+            min_lon_deg=-180.0,
+            max_lon_deg=180.0,
             step_deg=self.config.step_deg
         )
 
@@ -85,11 +85,11 @@ class DataProcessor:
         # Convert cells to arrays for vectorized operations
         cells_array = np.array(cells)
         lat_centres = cells_array[:, 2]  # lat_centre column
-        lng_centres = cells_array[:, 5]  # lng_centre column
+        lon_centres = cells_array[:, 5]  # lon_centre column
 
         # Vectorized interpolation - much faster than looping
         elevations = self.etopo_ds["z"].interp(
-            x=xr.DataArray(lng_centres, dims="points"),
+            x=xr.DataArray(lon_centres, dims="points"),
             y=xr.DataArray(lat_centres, dims="points"),
             kwargs={"fill_value": np.nan},
         ).values
@@ -99,9 +99,9 @@ class DataProcessor:
             "lat_a_deg": cells_array[:, 0],
             "lat_b_deg": cells_array[:, 1],
             "lat_centre_deg": cells_array[:, 2],
-            "lng_a_deg": cells_array[:, 3],
-            "lng_b_deg": cells_array[:, 4],
-            "lng_centre_deg": cells_array[:, 5],
+            "lon_a_deg": cells_array[:, 3],
+            "lon_b_deg": cells_array[:, 4],
+            "lon_centre_deg": cells_array[:, 5],
             "elevation": elevations,
         })
 
@@ -122,9 +122,9 @@ class DataProcessor:
     def _add_snow_data(self, cells_df: pl.DataFrame) -> pl.DataFrame:
         """Add snow coverage data to cells DataFrame."""
         latc = cells_df["lat_centre_deg"].to_numpy()
-        lngc = cells_df["lng_centre_deg"].to_numpy()
+        lonc = cells_df["lon_centre_deg"].to_numpy()
 
-        coords = list(zip(lngc, latc))
+        coords = list(zip(lonc, latc))
         samples = np.array(
             [val[0] for val in self.snow_src.sample(coords)],
             dtype="float32"
@@ -255,8 +255,8 @@ class DataProcessor:
         cells = build_equal_area_grid(
             min_lat_deg=segment.lat_min,
             max_lat_deg=segment.lat_max,
-            min_lng_deg=segment.lon_min,
-            max_lng_deg=segment.lon_max,
+            min_lon_deg=segment.lon_min,
+            max_lon_deg=segment.lon_max,
             step_deg=self.config.step_deg
         )
 
@@ -266,11 +266,11 @@ class DataProcessor:
         # Convert cells to arrays for vectorized operations
         cells_array = np.array(cells)
         lat_centres = cells_array[:, 2]
-        lng_centres = cells_array[:, 5]
+        lon_centres = cells_array[:, 5]
 
         # Vectorized interpolation
         elevations = self.etopo_ds["z"].interp(
-            x=xr.DataArray(lng_centres, dims="points"),
+            x=xr.DataArray(lon_centres, dims="points"),
             y=xr.DataArray(lat_centres, dims="points"),
             kwargs={"fill_value": np.nan},
         ).values
@@ -280,9 +280,9 @@ class DataProcessor:
             "lat_a_deg": cells_array[:, 0],
             "lat_b_deg": cells_array[:, 1],
             "lat_centre_deg": cells_array[:, 2],
-            "lng_a_deg": cells_array[:, 3],
-            "lng_b_deg": cells_array[:, 4],
-            "lng_centre_deg": cells_array[:, 5],
+            "lon_a_deg": cells_array[:, 3],
+            "lon_b_deg": cells_array[:, 4],
+            "lon_centre_deg": cells_array[:, 5],
             "elevation": elevations,
         })
 

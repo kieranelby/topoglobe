@@ -526,8 +526,8 @@ def generate_segment_mesh(
 
             lat1 = float(row['lat_a_deg'])
             lat2 = float(row['lat_b_deg'])
-            lon1 = float(row['lng_a_deg'])
-            lon2 = float(row['lng_b_deg'])
+            lon1 = float(row['lon_a_deg'])
+            lon2 = float(row['lon_b_deg'])
 
             # Check if cell overlaps segment (preserve exact logic from lines 245-248)
             if lat2 <= segment.lat_min or lat1 >= segment.lat_max:

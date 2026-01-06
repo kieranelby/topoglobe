@@ -7,8 +7,8 @@ from typing import List, Tuple
 def build_equal_area_grid(
     min_lat_deg: float,
     max_lat_deg: float,
-    min_lng_deg: float,
-    max_lng_deg: float,
+    min_lon_deg: float,
+    max_lon_deg: float,
     step_deg: float
 ) -> List[Tuple[float, float, float, float, float, float]]:
     """
@@ -21,12 +21,12 @@ def build_equal_area_grid(
     Args:
         min_lat_deg: Minimum latitude in degrees
         max_lat_deg: Maximum latitude in degrees
-        min_lng_deg: Minimum longitude in degrees
-        max_lng_deg: Maximum longitude in degrees
+        min_lon_deg: Minimum longitude in degrees
+        max_lon_deg: Maximum longitude in degrees
         step_deg: Target step size in degrees
 
     Returns:
-        List of tuples (lat_a, lat_b, lat_centre, lng_a, lng_b, lng_centre)
+        List of tuples (lat_a, lat_b, lat_centre, lon_a, lon_b, lon_centre)
         for each grid cell.
     """
     # Compute latitude bands
@@ -36,8 +36,8 @@ def build_equal_area_grid(
     delta_sin = np.sin(lat_edges_rad[1:]) - np.sin(lat_edges_rad[:-1])
 
     # Compute number of cells per band for equal area
-    lng_fraction = (max_lng_deg - min_lng_deg) / 360.0
-    equator_N_target = (360.0 * lng_fraction) / step_deg
+    lon_fraction = (max_lon_deg - min_lon_deg) / 360.0
+    equator_N_target = (360.0 * lon_fraction) / step_deg
     equator_delta_sin = np.sin(np.deg2rad(step_deg))
     k = equator_N_target / equator_delta_sin
     N_real = k * delta_sin
@@ -47,23 +47,23 @@ def build_equal_area_grid(
     cells = []
     for i in range(M):
         n_i = N_int[i]
-        lng_edges_i_deg = np.linspace(min_lng_deg, max_lng_deg, n_i + 1)
+        lon_edges_i_deg = np.linspace(min_lon_deg, max_lon_deg, n_i + 1)
         lat_a_deg = lat_edges_deg[i]
         lat_b_deg = lat_edges_deg[i + 1]
         lat_centre_deg = 0.5 * (lat_a_deg + lat_b_deg)
 
         for j in range(n_i):
-            lng_a_deg = lng_edges_i_deg[j]
-            lng_b_deg = lng_edges_i_deg[j + 1]
-            lng_centre_deg = 0.5 * (lng_a_deg + lng_b_deg)
+            lon_a_deg = lon_edges_i_deg[j]
+            lon_b_deg = lon_edges_i_deg[j + 1]
+            lon_centre_deg = 0.5 * (lon_a_deg + lon_b_deg)
 
             cells.append((
                 lat_a_deg,
                 lat_b_deg,
                 lat_centre_deg,
-                lng_a_deg,
-                lng_b_deg,
-                lng_centre_deg
+                lon_a_deg,
+                lon_b_deg,
+                lon_centre_deg
             ))
 
     return cells
