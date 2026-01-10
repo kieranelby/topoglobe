@@ -1,0 +1,18 @@
+topoglobe - Topographic Bathymetric Raised-Relief Earth Globe Kit 18cm 2 Colour V1 Northern Hemisphere
+
+This model, when assembled, is the top half (Northern Hemisphere) of a globe that shows the Earth's ocean depth (Bathymetric) and land height (Topographic, or Raised-Relief).
+
+The diameter of the globe is approximately 180mm (18 cm, 7 inches). The height difference from deepest ocean to highest mountain is 15mm.
+
+It uses two filament colours, one for land, and one for water.
+
+It prints as 24 segments across four plates which require gluing together (e.g. with cyanoacrylate adhesive, aka SuperGlue). This reduces the number of colour changes required, since the land is mostly in the top layers.
+
+To keep the size of the file small enough to upload, this model is just the Northern Hemisphere. The Southern Hemisphere can be found as a separate model (topoglobe - Topographic Bathymetric Raised-Relief Globe Kit 18cm 2 Colour V1 Southern Hemisphere). They can be glued together to make the complete globe.
+
+I printed this on a standard Bambu P1S using "0.12mm Fine" with Bambu PLA Matte (for water) and Bambu PLA Basic (for land) filament, with Support enabled (On build plate only, Type: normal(auto), Top interface layers: 1), using the same filament for water and for support.
+
+Under those settings, it took about 1d 8h (32 hours) to print, using ~400g of filament for water/support and ~100g of filament for the land (including waste).
+
+The model is based on the ETOPO Global Relief Model from NOAA. The resolution of the printed model is greatest at the equator, where each cell is 20 arc-minutes in size - about 37 kilometres, or 23 miles. Python code used to process the data can be found on github.com at kieranelby/topoglobe.
+
