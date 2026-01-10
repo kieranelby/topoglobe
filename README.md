@@ -4,9 +4,11 @@ Generate 3D-printable topographic globe segments from elevation data using pure-
 
 ## Overview
 
-This program combines elevation data (ETOPO1) and optional snow coverage data (MODIS) to create 3D models of Earth with raised relief features. The globe is divided into 48 segments that can be 3D printed and assembled.
+This python program combines elevation data and optional snow coverage data to create 3D models of Earth with raised relief features. The globe is divided into 48 segments that can be 3D printed and assembled.
 
-**Pure-Python implementation** using `trimesh` for fast, efficient mesh generation - no external CAD software required!
+## Appearance
+
+![Screenshot of the Northern hemisphere segments in a slicer.](segments-in-slicer.png)
 
 ## Installation
 
