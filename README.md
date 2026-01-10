@@ -1,10 +1,10 @@
 # 3D Globe Segment Generator
 
-Generate 3D-printable topographic globe segments from elevation data using pure-Python mesh generation.
+Generate 3D-printable segments that assemble into a globe showing the Earth's ocean depth (Bathymetric) and land height (Topographic, or Raised-Relief).
 
 ## Overview
 
-This python program combines elevation data and optional snow coverage data to create 3D models of Earth with raised relief features. The globe is divided into 48 segments that can be 3D printed and assembled.
+This python program combines elevation data and optional snow coverage data to create 3D models of Earth with raised relief features. The globe is divided into 48 segments that can be 3D printed and assembled. It was developed with the help of Claude Code.
 
 ## Appearance
 
