@@ -13,5 +13,8 @@ clearance_mm: 0.15
 # Grid parameters
 step_deg: 0.333333
 
+# Pole holes for mounting stand (degrees from pole, approximate due to cell boundaries)
+pole_hole_approx_radius_deg: 5.0
+
 # Output
 output_dir: "./output"

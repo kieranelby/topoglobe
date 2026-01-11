@@ -67,6 +67,7 @@ Edit `config.yaml` to set data paths and globe parameters. Key parameters:
 - `step_deg`: Grid cell size (1.0° default, increase for lower resolution)
 - `radius_mm`: Base globe radius
 - `elevation_range_mm`: Total height range for relief features
+- `pole_hole_approx_radius_deg`: Optional radius from poles (in degrees) where no elevation relief is generated, creating flat shell areas for mounting a stand (e.g., 5.0 creates holes at latitudes above 85°N and below 85°S)
 
 ## Architecture
 
@@ -144,9 +145,9 @@ Format: `{N|S}{lat_min}-{lat_max}_{E|W}{lon_min}-{lon_max}`
 
 ## Test Suite
 
-The project has comprehensive test coverage with 32 tests divided into unit and integration tests.
+The project has comprehensive test coverage with 34 tests divided into unit and integration tests.
 
-### Unit Tests (24 tests)
+### Unit Tests (26 tests)
 Fast tests that don't require data files. Run these frequently during development:
 
 ```bash
@@ -154,7 +155,7 @@ venv/bin/python3 -m pytest tests/ -v -m "not integration"
 ```
 
 Coverage:
-- **test_config.py** (3 tests): Configuration loading from YAML
+- **test_config.py** (5 tests): Configuration loading from YAML
 - **test_grid_builder.py** (5 tests): Equal-area grid generation
 - **test_spherical_geometry.py** (10 tests): Coordinate conversions and mesh utilities
 - **test_segment_generator.py** (6 tests): Globe segment definitions and structure
@@ -181,4 +182,4 @@ Coverage:
 venv/bin/python3 -m pytest tests/ -v
 ```
 
-All 32 tests should pass. Integration tests will be skipped if data files are not present.
+All 34 tests should pass. Integration tests will be skipped if data files are not present.

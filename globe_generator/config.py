@@ -27,6 +27,9 @@ class GlobeConfig:
     # Output
     output_dir: str
 
+    # Pole hole for mounting stand (optional)
+    pole_hole_approx_radius_deg: float | None = None
+
     # Computed values (set during data processing)
     core_radius_mm: float | None = None
     hollow_radius_mm: float | None = None
@@ -37,6 +40,7 @@ class GlobeConfig:
         with open(yaml_path) as f:
             data = yaml.safe_load(f)
 
+        pole_hole = data.get('pole_hole_approx_radius_deg')
         return cls(
             etopo_path=data['etopo_path'],
             snow_path=data.get('snow_path'),
@@ -48,6 +52,7 @@ class GlobeConfig:
             clearance_mm=float(data['clearance_mm']),
             step_deg=float(data['step_deg']),
             output_dir=data['output_dir'],
+            pole_hole_approx_radius_deg=float(pole_hole) if pole_hole is not None else None,
         )
 
 

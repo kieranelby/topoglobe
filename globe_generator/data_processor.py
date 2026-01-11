@@ -198,10 +198,23 @@ class DataProcessor:
         Calculate water, land, and snow heights using pre-computed global elevation range.
 
         This ensures consistent scaling across all segments.
+        Cells within the pole hole region get zero heights (shell only).
         """
-        # Water height (ocean depth)
+        # Check for pole hole region
+        pole_radius = self.config.pole_hole_approx_radius_deg
+        if pole_radius is not None:
+            is_pole_hole = (
+                (pl.col("lat_centre_deg") >= (90.0 - pole_radius)) |
+                (pl.col("lat_centre_deg") <= (-90.0 + pole_radius))
+            )
+        else:
+            is_pole_hole = pl.lit(False)
+
+        # Water height (ocean depth) - zero in pole hole region
         cells_df = cells_df.with_columns([
-            (
+            pl.when(is_pole_hole)
+            .then(0.0)
+            .otherwise(
                 (
                     -self.global_min_elevation +
                     pl.col("elevation").clip(upper_bound=0)
@@ -209,28 +222,36 @@ class DataProcessor:
             ).alias("water_height_mm")
         ])
 
-        # Snow height (only for cells with ≥90% snow coverage on land)
+        # Snow height (only for cells with ≥90% snow coverage on land) - zero in pole hole region
         cells_df = cells_df.with_columns([
-            pl.when(
-                (pl.col("snow_fraction").fill_nan(0.0).fill_null(0.0) < 90.0) |
-                (pl.col("elevation") < 0)
-            )
+            pl.when(is_pole_hole)
             .then(0.0)
             .otherwise(
-                (pl.col("elevation") * self.elevation_to_mm).clip(lower_bound=self.config.min_height_mm)
+                pl.when(
+                    (pl.col("snow_fraction").fill_nan(0.0).fill_null(0.0) < 90.0) |
+                    (pl.col("elevation") < 0)
+                )
+                .then(0.0)
+                .otherwise(
+                    (pl.col("elevation") * self.elevation_to_mm).clip(lower_bound=self.config.min_height_mm)
+                )
             )
             .alias("snow_height_mm")
         ])
 
-        # Land height (bare land, not snow or water)
+        # Land height (bare land, not snow or water) - zero in pole hole region
         cells_df = cells_df.with_columns([
-            pl.when(
-                (pl.col("snow_fraction").fill_nan(0.0).fill_null(0.0) >= 90.0) |
-                (pl.col("elevation") < 0)
-            )
+            pl.when(is_pole_hole)
             .then(0.0)
             .otherwise(
-                (pl.col("elevation") * self.elevation_to_mm).clip(lower_bound=self.config.min_height_mm)
+                pl.when(
+                    (pl.col("snow_fraction").fill_nan(0.0).fill_null(0.0) >= 90.0) |
+                    (pl.col("elevation") < 0)
+                )
+                .then(0.0)
+                .otherwise(
+                    (pl.col("elevation") * self.elevation_to_mm).clip(lower_bound=self.config.min_height_mm)
+                )
             )
             .alias("land_height_mm")
         ])

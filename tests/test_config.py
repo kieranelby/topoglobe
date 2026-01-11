@@ -96,3 +96,54 @@ def test_config_computed_values_initialized_as_none():
         assert config.hollow_radius_mm is None
     finally:
         Path(temp_path).unlink()
+
+
+def test_config_pole_hole_radius():
+    """Test config with pole hole radius specified."""
+    config_data = {
+        "etopo_path": "./data/ETOPO1_Bed_g_gmt4.grd",
+        "step_deg": 1.0,
+        "radius_mm": 85.0,
+        "elevation_range_mm": 20.0,
+        "min_height_mm": 0.5,
+        "shell_thickness_mm": 7.0,
+        "tab_size_degrees": 4.0,
+        "clearance_mm": 0.3,
+        "output_dir": "./output",
+        "pole_hole_approx_radius_deg": 5.0
+    }
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        yaml.dump(config_data, f)
+        temp_path = f.name
+
+    try:
+        config = GlobeConfig.from_yaml(temp_path)
+        assert config.pole_hole_approx_radius_deg == 5.0
+    finally:
+        Path(temp_path).unlink()
+
+
+def test_config_pole_hole_radius_optional():
+    """Test that pole hole radius defaults to None when not specified."""
+    config_data = {
+        "etopo_path": "./data/ETOPO1_Bed_g_gmt4.grd",
+        "step_deg": 1.0,
+        "radius_mm": 85.0,
+        "elevation_range_mm": 20.0,
+        "min_height_mm": 0.5,
+        "shell_thickness_mm": 7.0,
+        "tab_size_degrees": 4.0,
+        "clearance_mm": 0.3,
+        "output_dir": "./output"
+    }
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        yaml.dump(config_data, f)
+        temp_path = f.name
+
+    try:
+        config = GlobeConfig.from_yaml(temp_path)
+        assert config.pole_hole_approx_radius_deg is None
+    finally:
+        Path(temp_path).unlink()
