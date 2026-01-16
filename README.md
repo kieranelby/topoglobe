@@ -8,7 +8,13 @@ This python program combines elevation data and optional snow coverage data to c
 
 ## Appearance
 
-![Screenshot of the Northern hemisphere segments in a slicer.](docs/segments-in-slicer.png)
+![Screenshot of the printed Northern Hemisphere showing Europe.](docs/printed_topoglobe_18_1_n_europe.jpg)
+
+![Screenshot of the printed Northern Hemisphere showing the US.](docs/printed_topoglobe_18_1_n_us.jpg)
+
+![Screenshot of the printed Northern Hemisphere showing Asia with an apple for scale.](docs/printed_topoglobe_18_1_n_asia_apple.jpg)
+
+![Screenshot of the Northern Hemisphere segments in a slicer.](docs/segments-in-slicer.png)
 
 ## Installation
 
