@@ -8,7 +8,7 @@ This python program combines elevation data and optional snow coverage data to c
 
 ## Appearance
 
-![Screenshot of the Northern hemisphere segments in a slicer.](segments-in-slicer.png)
+![Screenshot of the Northern hemisphere segments in a slicer.](docs/segments-in-slicer.png)
 
 ## Installation
 
@@ -46,7 +46,7 @@ min_height_mm: 0.2           # Minimum feature height
 shell_thickness_mm: 7.0      # Wall thickness of the globe shell
 
 # Grid parameters
-step_deg: 0.333333           # Grid cell size in degrees (~37km at equator)
+step_deg: 0.333333           # Grid cell size in degrees (~37km at the equator)
 
 # Output
 output_dir: "./output"       # Directory for 3MF files
@@ -113,8 +113,8 @@ The globe is divided into 48 segments with increasing density towards the poles:
 Segment naming: `{N|S}{lat_min}-{lat_max}_{E|W}{lon_min}-{lon_max}`
 
 Examples:
-- `N60-90_W180-090` - North pole segment, 90-180° West
-- `N60-90_E000-090` - North pole segment, 0-90° East
+- `N60-90_W180-090` - North Pole segment, 90-180° West
+- `N60-90_E000-090` - North Pole segment, 0-90° East
 - `S30-60_W090-045` - Southern mid-latitude, 45-90° West
 
 ## Output
@@ -178,7 +178,7 @@ globe_generator/
 - Mesh generation: ~3-5 seconds per segment
 
 **Grid Resolution:**
-- Cell size: 0.333333° (~37km at equator, ~20 arc-minutes)
+- Cell size: 0.333333° (~37km at the equator, ~20 arc-minutes)
 - Typical segment: 8,000-9,000 cells
 - High detail capture of elevation features
 
@@ -203,6 +203,52 @@ Edit `config.yaml` to adjust detail level:
 **Adjusting Shell Smoothness:**
 
 Shell patches automatically use ~1° angular subdivision for professional-quality smooth surfaces. To adjust, edit `globe_generator/mesh_generator.py` line 196-197.
+
+## Slicer
+
+Unfortunately the 3mf files are too big to upload to GitHub!
+
+They can be found on Maker World, as two models - one for the Northern Hemisphere and one for the Southern Hemisphere.
+
+TODO - links here!
+
+![Screenshot of the Northern Hemisphere segments in a slicer.](docs/segments-in-slicer.png)
+
+To make the final 3mf models from the segments output by the Python program, the steps in Bambu Studio are:
+
+1\. Download data files, install dependencies and run `topoglobe.py` to make the segments in the `output` directory if you haven't already.  
+
+2\. Create an empty project in Bambu Studio.
+
+3\. Change the filaments so that filament 1 is the water colour and 2 is the land colour.
+
+4\. Choose the "0.12mm Fine" profile.
+
+5\. Enable support, with type = normal, and maybe Top interface layers = 1.
+
+6\. Import six segments from the `output` directory to the first plate. It's probably easiest to go through the files in alphabetical order. 
+
+When importing, some dialogs may pop up.
+
+We want to import multiple objects in each imported segment as a single object with multiple parts:
+
+![Screenshot of the multiple objects dialog.](docs/slicer-several-objects-as-one.png)
+
+Careful though, sometimes it asks about scaling the model - we do not want to scale the model, it's already in millimetres, so say No to this:
+
+![Screenshot of the scaling dialog.](docs/slicer-no-scale.png)
+
+You'll need to go into the "Objects" panel and change the filament to 2 for the land parts:
+
+![Screenshot of the Objects filament selection per part.](docs/slicer-choosing-land-part-filament.png)
+
+7\. Then add a new plate, and import six more segments, until you have all 4 plates from the Northern Hemisphere.
+
+8.\ I ended up making two models since Maker World (and to some extent Bambu Studio even) doesn't like models over 200MB.
+
+So finally, repeat the entire process from step 2 to make another 3mf for the Southern Hemisphere, containing 4 plates with the remaining 24 segments:
+
+![Screenshot of the Southern Hemisphere segments in a slicer.](docs/segments-in-slicer-southern.png)
 
 ## Testing
 
@@ -247,6 +293,12 @@ Integration tests automatically skip if data files are not present.
 venv/bin/python3 -m ruff check .
 venv/bin/python3 -m mypy globe_generator/*.py *.py
 ```
+
+
+## Known Bugs
+
+ - When in the default "no-snow" mode, some parts of Greenland are shown as water, but actually the land is below sea-level due to the weight of the ice! Sorry Greenland.
+ - A few of the Northern Hemisphere segments have non-closed manifolds. They still seem to slice ok.
 
 ## License
 
