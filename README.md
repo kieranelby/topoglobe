@@ -267,6 +267,26 @@ So finally, repeat the entire process from step 2 to make another 3mf for the So
 
 ![Screenshot of the Southern Hemisphere segments in a slicer.](docs/segments-in-slicer-southern.png)
 
+## Assembly
+
+To join the segments together, I used 80/120 grit sandpaper to remove "sprue" and roughen the edges to be glued slightly, then used SuperGlue.
+
+I worked up/down "ring-by-ring" from the equator, one hemisphere at a time.
+
+## Decoration
+
+The smallest sort of "map push pins" can be used to permanently mark locations (offices, places you've been, etc).
+
+The trick is to heat up the pointy end just enough to plunge it into the globe, being careful to get it right first time - don't change direction.
+
+Don't heat the pin up too much, or either the ball on the end of your pin will fall off, or you'll make a bigger hole than you wanted.  
+
+Here's some specs from an [Example product on Amazon UK](https://www.amazon.co.uk/dp/B07XNQCWY5):
+
+ - Material: plastic, stainless steel.
+ - Ball head diameter: 0.13 in (3mm).
+ - Needle length: 0.6 in (15mm).
+
 ## Testing
 
 The project includes comprehensive test coverage with 32 tests.
@@ -311,13 +331,18 @@ venv/bin/python3 -m ruff check .
 venv/bin/python3 -m mypy globe_generator/*.py *.py
 ```
 
-
 ## Known Bugs
 
  - When in the default "no-snow" mode, some parts of Greenland are shown as water, but actually the land is below sea-level due to the weight of the ice! Sorry Greenland. I probably should have used the ice elevation not the bedrock elevation data set.
  - A few of the Northern Hemisphere segments have non-closed manifolds. They still seem to slice ok.
  - It could do with being easier to assemble and quicker to print!
+ - Possibly topoglobe could be slightly more aware of the physical limitation of 3d-printing; some very pointy volcanic islands are just too delicate, and some "stringing" occurs around rapid changes in sea-depth. 
 
 ## License
 
 This project is provided as-is for personal and educational use.
+
+Please don't blame me if:
+ - your 3D printer gives up or catches fire;
+ - you get lost during your solo navigation around the world by coracle using only this globe for navigation;
+ - your favourite island is missing. 
