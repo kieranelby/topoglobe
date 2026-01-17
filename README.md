@@ -16,6 +16,15 @@ This python program combines elevation data and optional snow coverage data to c
 
 ![Screenshot of the Northern Hemisphere segments in a slicer.](docs/segments-in-slicer.png)
 
+## Print Ready 3D Files
+
+The 3mf files are too big for github - they can be found on MakerWorld at:
+
+ - [Northern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2254737-topoglobe-topographic-globe-kit-18cm-northern-half#profileId-2455952)
+ - Southern Hemisphere 3mf on MakerWorld - TODO
+
+The files are designed for Bambu Studio and have only been printed in a Bambu P1S so far.
+
 ## Installation
 
 ### Python Dependencies
@@ -25,20 +34,34 @@ Install required Python packages:
 pip install -r requirements.txt
 ```
 
-Required packages:
-- numpy >= 1.26.0
-- polars >= 1.35.0
-- xarray >= 2025.11.0
-- rasterio >= 1.4.0
-- pyyaml >= 6.0
-- trimesh >= 4.0.0
-- scipy >= 1.11.0
-- networkx >= 3.0
-- lxml >= 4.9.0
+### Data Files
+
+The geographic data is a bit large and may not be permitted under licensing rules to be included in this repo.
+
+Instead, you will need to download the required data files and place them in the `data/` directory.
+
+There are two data files. You may need to register (for free!) to get access.
+
+#### ETOPO1 1 Arc-Minute Global Relief Model
+- Version: ETOPO1 (deprecated!), Bedrock, Grid-Registered
+- Download from: https://www.ncei.noaa.gov/products/etopo-global-relief-model
+- Format: NetCDF (GMT .grd format)
+- Resolution: 60 Arc Seconds
+- Post-processing Needed: None
+- Target filename: `./data/ETOPO1_Bed_g_gmt4.grd`
+
+#### MODIS Snow Cover (Optional)
+- Download from: https://nsidc.org/data/mod10cm
+- Spatial Filter: Entire Globe
+- Date: I used 1st June 2024 to approximate summer conditions. 
+- Download Format: HDF
+- Post-processing Needed: Yes
+- Use TODO to convert HDF to GeoTIFF in EPSG:4326 projection
+- Target filename: `./data/MOD10CM_snow_2024-153.tif`
 
 ## Configuration
 
-Download the required data files and place them in the `data/` directory, then edit `config.yaml`:
+Edit `config.yaml` if desired:
 
 ```yaml
 # Data files
@@ -143,18 +166,6 @@ The 3MF files contain each layer as a separate object, allowing you to assign di
 ### Segment Alignment
 
 Cell boundaries are precisely aligned with segment edges, ensuring adjacent segments fit together perfectly when assembled.
-
-## Data Sources
-
-### ETOPO1 Global Relief Model
-- Download from: https://www.ncei.noaa.gov/products/etopo-global-relief-model
-- Format: NetCDF (GMT .grd format)
-- Resolution: 1 arc-minute
-
-### MODIS Snow Cover (Optional)
-- Download from: https://nsidc.org/data/mod10cm
-- Format: GeoTIFF
-- Use converted GeoTIFF in EPSG:4326 projection
 
 ## Architecture
 
@@ -303,8 +314,9 @@ venv/bin/python3 -m mypy globe_generator/*.py *.py
 
 ## Known Bugs
 
- - When in the default "no-snow" mode, some parts of Greenland are shown as water, but actually the land is below sea-level due to the weight of the ice! Sorry Greenland.
+ - When in the default "no-snow" mode, some parts of Greenland are shown as water, but actually the land is below sea-level due to the weight of the ice! Sorry Greenland. I probably should have used the ice elevation not the bedrock elevation data set.
  - A few of the Northern Hemisphere segments have non-closed manifolds. They still seem to slice ok.
+ - It could do with being easier to assemble and quicker to print!
 
 ## License
 
