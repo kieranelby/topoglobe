@@ -8,7 +8,7 @@ It uses two filament colours, one for land, and one for water.
 
 It prints as 24 segments across four plates which require gluing together (e.g. with cyanoacrylate adhesive, aka SuperGlue). This reduces the number of colour changes required, since the land is mostly in the top layers.
 
-To keep the size of the file small enough to upload, this model is just the Northern Hemisphere. The Southern Hemisphere can be found as a separate model (topoglobe - Topographic Bathymetric Raised-Relief Globe Kit 18cm 2 Colour V1 Southern Hemisphere). They can be glued together to make the complete globe.
+To keep the size of the file small enough to upload, this model is just the Northern Hemisphere. The Southern Hemisphere can be found as a separate model (topoglobe Topographic Globe Kit 18cm Northern Half). They can be glued together to make the complete globe.
 
 I printed this on a standard Bambu P1S using "0.12mm Fine" with Bambu PLA Matte (for water) and Bambu PLA Basic (for land) filament, with Support enabled (On build plate only, Type: normal(auto), Top interface layers: 1), using the same filament for water and for support.
 

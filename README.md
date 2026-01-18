@@ -8,11 +8,15 @@ This python program combines elevation data and optional snow coverage data to c
 
 ## Appearance
 
-![Screenshot of the printed Northern Hemisphere showing Europe.](docs/printed_topoglobe_18_1_n_europe.jpg)
+![Photo of the printed globe on a stand showing sea off Japan.](docs/printed-on-stand-1.jpg)
 
-![Screenshot of the printed Northern Hemisphere showing the US.](docs/printed_topoglobe_18_1_n_us.jpg)
+![Photo of the printed globe on a stand with map pins.](docs/printed-with-pins.jpg)
 
-![Screenshot of the printed Northern Hemisphere showing Asia with an apple for scale.](docs/printed_topoglobe_18_1_n_asia_apple.jpg)
+![Photo of the printed Northern Hemisphere showing Europe.](docs/printed_topoglobe_18_1_n_europe.jpg)
+
+![Photo of the printed Northern Hemisphere showing the US.](docs/printed_topoglobe_18_1_n_us.jpg)
+
+![Photo of the printed Northern Hemisphere showing Asia with an apple for scale.](docs/printed_topoglobe_18_1_n_asia_apple.jpg)
 
 ![Screenshot of the Northern Hemisphere segments in a slicer.](docs/segments-in-slicer.png)
 
@@ -21,7 +25,7 @@ This python program combines elevation data and optional snow coverage data to c
 The 3mf files are too big for github - they can be found on MakerWorld at:
 
  - [Northern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2254737-topoglobe-topographic-globe-kit-18cm-northern-half#profileId-2455952)
- - Southern Hemisphere 3mf on MakerWorld - TODO
+ - [Southern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2264577-topoglobe-topographic-globe-kit-18cm-southern-half#profileId-2467891)
 
 The files are designed for Bambu Studio and have only been printed in a Bambu P1S so far.
 
@@ -223,11 +227,12 @@ Shell patches automatically use ~1° angular subdivision for professional-qualit
 
 ## Slicer
 
-Unfortunately the 3mf files are too big to upload to GitHub!
+Unfortunately the final print-ready 3mf files with profile and colour data are too big to upload to GitHub!
 
-They can be found on Maker World, as two models - one for the Northern Hemisphere and one for the Southern Hemisphere.
+They can be found on Maker World, as two models - one for the Northern Hemisphere and one for the Southern Hemisphere:
 
-TODO - links here!
+ - [Northern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2254737-topoglobe-topographic-globe-kit-18cm-northern-half#profileId-2455952)
+ - [Southern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2264577-topoglobe-topographic-globe-kit-18cm-southern-half#profileId-2467891)
 
 ![Screenshot of the Northern Hemisphere segments in a slicer.](docs/segments-in-slicer.png)
 
@@ -287,6 +292,18 @@ Here's some specs from an [Example product on Amazon UK](https://www.amazon.co.u
  - Ball head diameter: 0.13 in (3mm).
  - Needle length: 0.6 in (15mm).
 
+## Stand
+
+I found it easiest to "cannibalise" an existing off-the-shelf globe, and take its stand.
+
+This globe was about the right size and had a very re-use friendly stand:
+
+[Exerz 20cm World Globe Political Map at Amazon UK](https://www.amazon.co.uk/Exerz-20cm-World-Globe-Educational/dp/B08V144XH3)
+
+There is an STL file included in this repo, `stand-attachment.stl`, generated from an OpenSCAD file, `stand-attachment.scad`, to make a suitable connector to join the globe to the stand:
+
+![Stand Connectors](docs/stand-connectors.png)
+
 ## Testing
 
 The project includes comprehensive test coverage with 32 tests.
@@ -336,7 +353,8 @@ venv/bin/python3 -m mypy globe_generator/*.py *.py
  - When in the default "no-snow" mode, some parts of Greenland are shown as water, but actually the land is below sea-level due to the weight of the ice! Sorry Greenland. I probably should have used the ice elevation not the bedrock elevation data set.
  - A few of the Northern Hemisphere segments have non-closed manifolds. They still seem to slice ok.
  - It could do with being easier to assemble and quicker to print!
- - Possibly topoglobe could be slightly more aware of the physical limitation of 3d-printing; some very pointy volcanic islands are just too delicate, and some "stringing" occurs around rapid changes in sea-depth. 
+ - When assembling, the join at 60 degrees North and South was a bit ugly.  
+ - Possibly topoglobe could be slightly more aware of the physical limitation of 3d-printing; some very pointy volcanic islands are just too delicate, and some "stringing" occurs around rapid changes in sea-depth.
 
 ## License
 
