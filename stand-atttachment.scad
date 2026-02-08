@@ -1,12 +1,12 @@
 $fn = 60;
-height = 16;
+height = 18;
 th = 5;
 bbh = 1;
 bh = 5;
 mh = height - th - bh - bbh;
 hr = 3.6;
-bbr = 7.0;
-br = 7.5;
+bbr = 6.75;
+br = 7.25;
 mr = 5.5;
 tr = 6.5;
 eps = 0.01;
