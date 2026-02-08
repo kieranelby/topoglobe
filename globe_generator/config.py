@@ -18,8 +18,6 @@ class GlobeConfig:
     elevation_range_mm: float
     min_height_mm: float
     shell_thickness_mm: float
-    tab_size_degrees: float
-    clearance_mm: float
 
     # Grid parameters
     step_deg: float
@@ -48,8 +46,6 @@ class GlobeConfig:
             elevation_range_mm=float(data['elevation_range_mm']),
             min_height_mm=float(data['min_height_mm']),
             shell_thickness_mm=float(data['shell_thickness_mm']),
-            tab_size_degrees=float(data['tab_size_degrees']),
-            clearance_mm=float(data['clearance_mm']),
             step_deg=float(data['step_deg']),
             output_dir=data['output_dir'],
             pole_hole_approx_radius_deg=float(pole_hole) if pole_hole is not None else None,

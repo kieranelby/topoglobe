@@ -19,8 +19,6 @@ def test_config_from_yaml():
         "elevation_range_mm": 20.0,
         "min_height_mm": 0.5,
         "shell_thickness_mm": 7.0,
-        "tab_size_degrees": 4.0,
-        "clearance_mm": 0.3,
         "output_dir": "./output"
     }
 
@@ -39,8 +37,6 @@ def test_config_from_yaml():
         assert config.elevation_range_mm == 20.0
         assert config.min_height_mm == 0.5
         assert config.shell_thickness_mm == 7.0
-        assert config.tab_size_degrees == 4.0
-        assert config.clearance_mm == 0.3
     finally:
         Path(temp_path).unlink()
 
@@ -54,8 +50,6 @@ def test_config_optional_snow_path():
         "elevation_range_mm": 20.0,
         "min_height_mm": 0.5,
         "shell_thickness_mm": 7.0,
-        "tab_size_degrees": 4.0,
-        "clearance_mm": 0.3,
         "output_dir": "./output"
     }
 
@@ -79,8 +73,6 @@ def test_config_computed_values_initialized_as_none():
         "elevation_range_mm": 20.0,
         "min_height_mm": 0.5,
         "shell_thickness_mm": 7.0,
-        "tab_size_degrees": 4.0,
-        "clearance_mm": 0.3,
         "output_dir": "./output"
     }
 
@@ -107,8 +99,6 @@ def test_config_pole_hole_radius():
         "elevation_range_mm": 20.0,
         "min_height_mm": 0.5,
         "shell_thickness_mm": 7.0,
-        "tab_size_degrees": 4.0,
-        "clearance_mm": 0.3,
         "output_dir": "./output",
         "pole_hole_approx_radius_deg": 5.0
     }
@@ -133,8 +123,6 @@ def test_config_pole_hole_radius_optional():
         "elevation_range_mm": 20.0,
         "min_height_mm": 0.5,
         "shell_thickness_mm": 7.0,
-        "tab_size_degrees": 4.0,
-        "clearance_mm": 0.3,
         "output_dir": "./output"
     }
 

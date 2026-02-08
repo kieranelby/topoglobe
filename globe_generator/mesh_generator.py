@@ -22,6 +22,7 @@ class SphericalPatchMeshBuilder:
 
     def create_flat_bottom_patch(
         self,
+        r_inner: float,
         r_outer: float,
         flat_z: float,
         lat_min: float,
@@ -33,13 +34,15 @@ class SphericalPatchMeshBuilder:
         lon_subdivisions: int | None = None
     ) -> trimesh.Trimesh:
         """
-        Generate spherical patch with flat inner surface for support-free printing.
+        Generate spherical patch with radial side walls and flat interior.
 
-        Creates a patch with a curved outer surface and a flat inner surface.
-        The flat surface is horizontal (constant Z) in rotated space, which becomes
-        the print bed orientation.
+        Creates a patch with:
+        - Curved outer surface (on sphere at r_outer)
+        - Radial side walls (edge inner vertices on sphere at r_inner)
+        - Flat interior bottom (interior inner vertices on horizontal plane)
 
         Args:
+            r_inner: Inner radius in mm (for edge vertices)
             r_outer: Outer radius in mm
             flat_z: Z coordinate of flat bottom plane in rotated space
             lat_min: Minimum latitude in degrees
@@ -51,7 +54,7 @@ class SphericalPatchMeshBuilder:
             lon_subdivisions: Number of longitude divisions (auto-calculated if None)
 
         Returns:
-            Trimesh object representing the patch with flat bottom
+            Trimesh object representing the patch
         """
         # Calculate adaptive subdivision if not provided
         if lat_subdivisions is None or lon_subdivisions is None:
@@ -70,26 +73,42 @@ class SphericalPatchMeshBuilder:
         rot_3x3 = rotation_matrix[:3, :3]
         rot_inv_3x3 = rot_3x3.T  # Orthogonal matrix: inverse = transpose
 
+        # Calculate the 4 corners of the flat base quadrilateral
+        # Project segment corners at r_inner to the flat plane
+        def get_flat_corner(lat: float, lon: float) -> np.ndarray:
+            x, y, z = latlon_to_cartesian(lat, lon, r_inner)
+            pt = np.array([x, y, z])
+            rotated = rot_3x3 @ pt
+            rotated[2] = flat_z
+            return rot_inv_3x3 @ rotated
+
+        # Corners: SW, SE, NE, NW (in lat/lon order)
+        corner_sw = get_flat_corner(lat_min, lon_min)  # i=0, j=0
+        corner_se = get_flat_corner(lat_min, lon_max)  # i=0, j=max
+        corner_ne = get_flat_corner(lat_max, lon_max)  # i=max, j=max
+        corner_nw = get_flat_corner(lat_max, lon_min)  # i=max, j=0
+
         # Convert to 3D vertices
         vertices_outer = []
         vertices_inner = []
 
-        for lat in lats:
-            for lon in lons:
+        for i, lat in enumerate(lats):
+            # Normalized latitude coordinate [0, 1]
+            u = i / (lat_subdivisions - 1) if lat_subdivisions > 1 else 0.0
+
+            for j, lon in enumerate(lons):
+                # Normalized longitude coordinate [0, 1]
+                v = j / (lon_subdivisions - 1) if lon_subdivisions > 1 else 0.0
+
                 # Outer vertex on sphere
                 x_outer, y_outer, z_outer = latlon_to_cartesian(lat, lon, r_outer)
                 vertices_outer.append([x_outer, y_outer, z_outer])
 
-                # Inner vertex: project to flat plane in rotated space
-                # 1. Apply rotation to outer vertex
-                outer_pt = np.array([x_outer, y_outer, z_outer])
-                rotated_pt = rot_3x3 @ outer_pt
-
-                # 2. Project to flat plane (set Z = flat_z)
-                rotated_pt[2] = flat_z
-
-                # 3. Transform back to original space
-                inner_pt = rot_inv_3x3 @ rotated_pt
+                # Inner vertex: bilinear interpolation on flat quadrilateral
+                inner_pt = ((1-u) * (1-v) * corner_sw +
+                            (1-u) * v * corner_se +
+                            u * v * corner_ne +
+                            u * (1-v) * corner_nw)
                 vertices_inner.append(inner_pt.tolist())
 
         # Combine vertices: outer layer first, then inner layer
@@ -292,18 +311,19 @@ class SphericalPatchMeshBuilder:
 
         return trimesh.Trimesh(vertices=np.array(vertices), faces=np.array(faces))
 
-    def create_shell_patches(
+    def create_shell_patch(
         self,
         segment: SegmentDefinition,
         rotation_matrix: np.ndarray,
         flat_z: float
-    ) -> list[trimesh.Trimesh]:
+    ) -> trimesh.Trimesh:
         """
-        Create 5 shell patches with cutouts for tabs and flat inner surfaces.
+        Create a single shell patch with radial side walls and flat interior.
 
-        Creates a shell divided into 5 patches to accommodate dual tabs on the
-        eastern edge and corresponding cutouts on the western edge. Inner surfaces
-        are flat for support-free 3D printing.
+        Creates a shell covering the entire segment with:
+        - Curved outer surface
+        - Radial side walls (for proper fit with adjacent segments)
+        - Flat interior bottom for support-free printing
 
         Args:
             segment: Segment definition with lat/lon boundaries
@@ -311,219 +331,30 @@ class SphericalPatchMeshBuilder:
             flat_z: Z coordinate of flat bottom plane in rotated space
 
         Returns:
-            List of 5 mesh patches (south, center, north, east-lower, east-upper)
+            Single mesh patch for the shell
         """
-        tab_size_degrees = self.config.tab_size_degrees
+        r_inner = self.config.hollow_radius_mm
         r_outer = self.config.core_radius_mm
 
-        # Calculate dual cutout regions on western edge
-        # Cutouts are same angular size as tabs (clearance applied to tab thickness instead)
-        segment_lat_range = segment.lat_max - segment.lat_min
-
-        # Lower cutout (at 1/3 height)
-        cutout_lower_lat_center = segment.lat_min + (segment_lat_range / 3.0)
-        cutout_lower_lat_min = cutout_lower_lat_center - (tab_size_degrees / 2.0)
-        cutout_lower_lat_max = cutout_lower_lat_center + (tab_size_degrees / 2.0)
-
-        # Adjust longitude span to match latitude-adjusted tabs
-        cutout_lower_lon_span = tab_size_degrees / max(0.1, math.cos(math.radians(cutout_lower_lat_center)))
-        cutout_lower_lon_max = segment.lon_min + cutout_lower_lon_span
-
-        # Upper cutout (at 2/3 height)
-        cutout_upper_lat_center = segment.lat_min + (2.0 * segment_lat_range / 3.0)
-        cutout_upper_lat_min = cutout_upper_lat_center - (tab_size_degrees / 2.0)
-        cutout_upper_lat_max = cutout_upper_lat_center + (tab_size_degrees / 2.0)
-
-        # Adjust longitude span for this cutout's latitude
-        cutout_upper_lon_span = tab_size_degrees / max(0.1, math.cos(math.radians(cutout_upper_lat_center)))
-        cutout_upper_lon_max = segment.lon_min + cutout_upper_lon_span
-
-        # Helper function to calculate subdivisions for shell patches
+        # Calculate subdivisions based on angular extent
         # Target: ~1 degree per subdivision for smooth visible surfaces
-        def calc_shell_subdivisions(lat_span: float, lon_span: float) -> tuple:
-            lat_subs = max(8, int(round(lat_span)))
-            lon_subs = max(8, int(round(lon_span)))
-            return lat_subs, lon_subs
+        lat_span = segment.lat_max - segment.lat_min
+        lon_span = segment.lon_max - segment.lon_min
+        lat_subs = max(8, int(round(lat_span)))
+        lon_subs = max(8, int(round(lon_span)))
 
-        # Create 5 shell patches with subdivision based on angular extent
-        patches = []
-        segment_lon_span = segment.lon_max - segment.lon_min
-
-        # South patch (below lower cutout)
-        lat_span_south = cutout_lower_lat_min - segment.lat_min
-        lat_subs_south, lon_subs_south = calc_shell_subdivisions(lat_span_south, segment_lon_span)
-        shell_south = self.create_flat_bottom_patch(
+        return self.create_flat_bottom_patch(
+            r_inner,
             r_outer,
             flat_z,
             segment.lat_min,
-            cutout_lower_lat_min,
-            segment.lon_min,
-            segment.lon_max,
-            rotation_matrix,
-            lat_subdivisions=lat_subs_south,
-            lon_subdivisions=lon_subs_south
-        )
-        patches.append(shell_south)
-
-        # Center patch (between two cutouts)
-        lat_span_center = cutout_upper_lat_min - cutout_lower_lat_max
-        lat_subs_center, lon_subs_center = calc_shell_subdivisions(lat_span_center, segment_lon_span)
-        shell_center = self.create_flat_bottom_patch(
-            r_outer,
-            flat_z,
-            cutout_lower_lat_max,
-            cutout_upper_lat_min,
-            segment.lon_min,
-            segment.lon_max,
-            rotation_matrix,
-            lat_subdivisions=lat_subs_center,
-            lon_subdivisions=lon_subs_center
-        )
-        patches.append(shell_center)
-
-        # North patch (above upper cutout)
-        lat_span_north = segment.lat_max - cutout_upper_lat_max
-        lat_subs_north, lon_subs_north = calc_shell_subdivisions(lat_span_north, segment_lon_span)
-        shell_north = self.create_flat_bottom_patch(
-            r_outer,
-            flat_z,
-            cutout_upper_lat_max,
             segment.lat_max,
             segment.lon_min,
             segment.lon_max,
             rotation_matrix,
-            lat_subdivisions=lat_subs_north,
-            lon_subdivisions=lon_subs_north
+            lat_subdivisions=lat_subs,
+            lon_subdivisions=lon_subs
         )
-        patches.append(shell_north)
-
-        # East-lower patch (right of lower cutout)
-        lat_span_east_lower = cutout_lower_lat_max - cutout_lower_lat_min
-        lon_span_east_lower = segment.lon_max - cutout_lower_lon_max
-        lat_subs_east_lower, lon_subs_east_lower = calc_shell_subdivisions(lat_span_east_lower, lon_span_east_lower)
-        shell_east_lower = self.create_flat_bottom_patch(
-            r_outer,
-            flat_z,
-            cutout_lower_lat_min,
-            cutout_lower_lat_max,
-            cutout_lower_lon_max,
-            segment.lon_max,
-            rotation_matrix,
-            lat_subdivisions=lat_subs_east_lower,
-            lon_subdivisions=lon_subs_east_lower
-        )
-        patches.append(shell_east_lower)
-
-        # East-upper patch (right of upper cutout)
-        lat_span_east_upper = cutout_upper_lat_max - cutout_upper_lat_min
-        lon_span_east_upper = segment.lon_max - cutout_upper_lon_max
-        lat_subs_east_upper, lon_subs_east_upper = calc_shell_subdivisions(lat_span_east_upper, lon_span_east_upper)
-        shell_east_upper = self.create_flat_bottom_patch(
-            r_outer,
-            flat_z,
-            cutout_upper_lat_min,
-            cutout_upper_lat_max,
-            cutout_upper_lon_max,
-            segment.lon_max,
-            rotation_matrix,
-            lat_subdivisions=lat_subs_east_upper,
-            lon_subdivisions=lon_subs_east_upper
-        )
-        patches.append(shell_east_upper)
-
-        return patches
-
-    def create_tab_patches(
-        self,
-        segment: SegmentDefinition,
-        rotation_matrix: np.ndarray,
-        flat_z: float
-    ) -> list[trimesh.Trimesh]:
-        """
-        Create 2 tab patches on eastern edge with flat inner surfaces.
-
-        Tabs are thinner than shell by clearance amount to provide radial clearance.
-        Inner surfaces are flat for support-free 3D printing.
-
-        Args:
-            segment: Segment definition with lat/lon boundaries
-            rotation_matrix: 4x4 transformation matrix for segment orientation
-            flat_z: Z coordinate of flat bottom plane in rotated space
-
-        Returns:
-            List of 2 mesh patches (lower tab, upper tab)
-        """
-        shell_thickness_mm = self.config.shell_thickness_mm
-        tab_size_degrees = self.config.tab_size_degrees
-        clearance_mm = self.config.clearance_mm
-
-        # Tabs are thinner than shell to provide clearance in depth
-        tab_thickness_mm = shell_thickness_mm - clearance_mm
-        r_outer_tab = self.config.hollow_radius_mm + tab_thickness_mm
-
-        segment_lat_range = segment.lat_max - segment.lat_min
-
-        # Helper function for tab subdivisions (same as shell)
-        def calc_tab_subdivisions(lat_span: float, lon_span: float) -> tuple:
-            lat_subs = max(8, int(round(lat_span)))
-            lon_subs = max(8, int(round(lon_span)))
-            return lat_subs, lon_subs
-
-        patches = []
-
-        # Lower tab (at 1/3 height)
-        tab_lower_lat_center = segment.lat_min + (segment_lat_range / 3.0)
-        tab_lower_lat_min = tab_lower_lat_center - (tab_size_degrees / 2.0)
-        tab_lower_lat_max = tab_lower_lat_center + (tab_size_degrees / 2.0)
-
-        # Adjust longitude span to compensate for latitude convergence
-        tab_lower_lon_span = tab_size_degrees / max(0.1, math.cos(math.radians(tab_lower_lat_center)))
-        tab_lower_lon_min = segment.lon_max
-        tab_lower_lon_max = segment.lon_max + tab_lower_lon_span
-
-        lat_span_lower = tab_lower_lat_max - tab_lower_lat_min
-        lat_subs_lower, lon_subs_lower = calc_tab_subdivisions(lat_span_lower, tab_lower_lon_span)
-
-        tab_lower = self.create_flat_bottom_patch(
-            r_outer_tab,
-            flat_z,
-            tab_lower_lat_min,
-            tab_lower_lat_max,
-            tab_lower_lon_min,
-            tab_lower_lon_max,
-            rotation_matrix,
-            lat_subdivisions=lat_subs_lower,
-            lon_subdivisions=lon_subs_lower
-        )
-        patches.append(tab_lower)
-
-        # Upper tab (at 2/3 height)
-        tab_upper_lat_center = segment.lat_min + (2.0 * segment_lat_range / 3.0)
-        tab_upper_lat_min = tab_upper_lat_center - (tab_size_degrees / 2.0)
-        tab_upper_lat_max = tab_upper_lat_center + (tab_size_degrees / 2.0)
-
-        # Adjust longitude span for this tab's latitude
-        tab_upper_lon_span = tab_size_degrees / max(0.1, math.cos(math.radians(tab_upper_lat_center)))
-        tab_upper_lon_min = segment.lon_max
-        tab_upper_lon_max = segment.lon_max + tab_upper_lon_span
-
-        lat_span_upper = tab_upper_lat_max - tab_upper_lat_min
-        lat_subs_upper, lon_subs_upper = calc_tab_subdivisions(lat_span_upper, tab_upper_lon_span)
-
-        tab_upper = self.create_flat_bottom_patch(
-            r_outer_tab,
-            flat_z,
-            tab_upper_lat_min,
-            tab_upper_lat_max,
-            tab_upper_lon_min,
-            tab_upper_lon_max,
-            rotation_matrix,
-            lat_subdivisions=lat_subs_upper,
-            lon_subdivisions=lon_subs_upper
-        )
-        patches.append(tab_upper)
-
-        return patches
 
     def create_elevation_patch(
         self,
@@ -558,6 +389,61 @@ class SphericalPatchMeshBuilder:
             lat_subdivisions=4,
             lon_subdivisions=4
         )
+
+
+def calculate_edge_min_z(
+    segment: SegmentDefinition,
+    r_inner: float,
+    rotation_matrix: np.ndarray,
+    num_samples: int = 50
+) -> float:
+    """
+    Calculate the minimum Z coordinate of inner edge vertices after rotation.
+
+    This determines where the flat bottom plane should be placed so that
+    it sits at or below all edge vertices.
+
+    Args:
+        segment: Segment definition with lat/lon boundaries
+        r_inner: Inner radius for edge vertices
+        rotation_matrix: 4x4 transformation matrix
+        num_samples: Number of sample points per edge
+
+    Returns:
+        Minimum Z coordinate of edge vertices in rotated space
+    """
+    rot_3x3 = rotation_matrix[:3, :3]
+    min_z = float('inf')
+
+    # Sample points along all four edges
+    lats_edge = np.linspace(segment.lat_min, segment.lat_max, num_samples)
+    lons_edge = np.linspace(segment.lon_min, segment.lon_max, num_samples)
+
+    # South edge (lat_min)
+    for lon in lons_edge:
+        x, y, z = latlon_to_cartesian(segment.lat_min, lon, r_inner)
+        rotated = rot_3x3 @ np.array([x, y, z])
+        min_z = min(min_z, rotated[2])
+
+    # North edge (lat_max)
+    for lon in lons_edge:
+        x, y, z = latlon_to_cartesian(segment.lat_max, lon, r_inner)
+        rotated = rot_3x3 @ np.array([x, y, z])
+        min_z = min(min_z, rotated[2])
+
+    # West edge (lon_min)
+    for lat in lats_edge:
+        x, y, z = latlon_to_cartesian(lat, segment.lon_min, r_inner)
+        rotated = rot_3x3 @ np.array([x, y, z])
+        min_z = min(min_z, rotated[2])
+
+    # East edge (lon_max)
+    for lat in lats_edge:
+        x, y, z = latlon_to_cartesian(lat, segment.lon_max, r_inner)
+        rotated = rot_3x3 @ np.array([x, y, z])
+        min_z = min(min_z, rotated[2])
+
+    return min_z
 
 
 def calculate_rotation_to_north_pole(segment: SegmentDefinition) -> np.ndarray:
@@ -662,7 +548,7 @@ def generate_segment_mesh(
     """
     Generate segment mesh and export to 3MF.
 
-    Creates a complete segment mesh including hollow shell, tabs, and elevation relief
+    Creates a complete segment mesh including shell and elevation relief
     for water, land, and snow layers. Exports as multi-object 3MF for multi-color printing.
 
     Args:
@@ -682,16 +568,15 @@ def generate_segment_mesh(
         # Pre-calculate rotation matrix for flat bottom computation
         rotation_matrix = calculate_rotation_to_north_pole(segment)
 
-        # Calculate flat_z: after rotation, segment center is at Z = r_outer
-        # For shell_thickness at center, flat plane is at r_outer - shell_thickness
-        # This maintains minimum wall thickness at the thinnest point (center)
-        flat_z = config.core_radius_mm - config.shell_thickness_mm
+        # Calculate flat_z: must be at or below the lowest edge vertex after rotation
+        # This ensures the flat interior doesn't float above the radial edges
+        r_inner = config.hollow_radius_mm
+        flat_z = calculate_edge_min_z(segment, r_inner, rotation_matrix)
 
-        # Build shell and tabs with flat inner surfaces
-        shell_patches = builder.create_shell_patches(segment, rotation_matrix, flat_z)
-        tab_patches = builder.create_tab_patches(segment, rotation_matrix, flat_z)
+        # Build shell with flat inner surface
+        shell_patch = builder.create_shell_patch(segment, rotation_matrix, flat_z)
 
-        water_patches = shell_patches + tab_patches
+        water_patches = [shell_patch]
         land_patches = []
         snow_patches = []
 
