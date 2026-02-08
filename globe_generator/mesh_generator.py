@@ -13,6 +13,108 @@ from .spherical_geometry import calculate_subdivision, create_quad_triangles, la
 
 logger = logging.getLogger(__name__)
 
+# Path to snap-fit pocket STL (relative to project root)
+POCKET_STL_PATH = Path(__file__).parent.parent / "snapfits" / "connector1-slim-model_files" / "pocket-0-dof-slim-r1.stl"
+
+
+def load_half_pocket() -> trimesh.Trimesh:
+    """
+    Load the snap-fit pocket and return only the Z >= 0 half.
+
+    Returns:
+        Trimesh of the half-pocket (16mm long)
+    """
+    pocket_geom = trimesh.load(str(POCKET_STL_PATH))
+    if not isinstance(pocket_geom, trimesh.Trimesh):
+        raise ValueError("Pocket STL did not load as a Trimesh")
+    pocket: trimesh.Trimesh = pocket_geom
+
+    # Slice to keep only Z >= 0 (one half of the symmetric pocket)
+    # Normal [0,0,1] keeps the side where Z >= 0, cap=True closes the cut
+    half_pocket = pocket.slice_plane([0, 0, 0], [0, 0, 1], cap=True)
+    return half_pocket
+
+
+def create_pocket_transform(
+    lat: float,
+    lon: float,
+    radius: float,
+    direction: str
+) -> np.ndarray:
+    """
+    Create transformation matrix to position pocket at edge midpoint.
+
+    The pocket is oriented so:
+    - Its Z axis (length) aligns with north-south tangent
+    - Its Y axis (depth) points radially inward
+    - Its X axis (width) aligns with east-west tangent
+
+    Args:
+        lat: Latitude of pocket center in degrees
+        lon: Longitude of pocket center in degrees
+        radius: Radius at which to place the pocket (outer surface)
+        direction: 'east' or 'west' - which edge
+
+    Returns:
+        4x4 transformation matrix
+    """
+    # Convert to radians
+    lat_rad = math.radians(lat)
+    lon_rad = math.radians(lon)
+
+    # Position on sphere
+    pos = np.array([
+        radius * math.cos(lat_rad) * math.cos(lon_rad),
+        radius * math.cos(lat_rad) * math.sin(lon_rad),
+        radius * math.sin(lat_rad)
+    ])
+
+    # Radial direction (outward from center)
+    radial = pos / np.linalg.norm(pos)
+
+    # North tangent direction (along meridian, pointing north)
+    # Derivative of position with respect to latitude
+    north = np.array([
+        -math.sin(lat_rad) * math.cos(lon_rad),
+        -math.sin(lat_rad) * math.sin(lon_rad),
+        math.cos(lat_rad)
+    ])
+    north = north / np.linalg.norm(north)
+
+    # East tangent direction (along parallel, pointing east)
+    east = np.cross(radial, north)
+    east = east / np.linalg.norm(east)
+
+    # Pocket orientation:
+    # - Pocket Z (length) -> north direction
+    # - Pocket Y (depth) -> inward (-radial) for east edge, or adjusted for west
+    # - Pocket X (width) -> east direction
+    #
+    # For east edge: pocket opens toward east (outward from segment)
+    # For west edge: pocket opens toward west (outward from segment)
+
+    if direction == 'east':
+        pocket_x = east
+        pocket_y = -radial  # Depth points inward (pocket opens outward)
+        pocket_z = north
+    else:  # west
+        pocket_x = -east  # Flip to face west
+        pocket_y = -radial
+        pocket_z = north
+
+    # Build rotation matrix (columns are the new axes)
+    rotation = np.eye(4)
+    rotation[:3, 0] = pocket_x
+    rotation[:3, 1] = pocket_y
+    rotation[:3, 2] = pocket_z
+
+    # Translation to position
+    translation = np.eye(4)
+    translation[:3, 3] = pos
+
+    # Combined transform: first rotate, then translate
+    return translation @ rotation
+
 
 class SphericalPatchMeshBuilder:
     """Build triangulated spherical shell patches."""
@@ -625,6 +727,34 @@ def generate_segment_mesh(
                     )
                     if ssp is not None:
                         snow_patches.append(ssp)
+
+        # Add snap-fit pockets to shell before combining with elevation patches
+        if POCKET_STL_PATH.exists():
+            try:
+                half_pocket = load_half_pocket()
+                lat_mid = (segment.lat_min + segment.lat_max) / 2.0
+
+                # East edge pocket
+                east_transform = create_pocket_transform(
+                    lat_mid, segment.lon_max, core_radius_mm, 'east'
+                )
+                east_pocket = half_pocket.copy()
+                east_pocket.apply_transform(east_transform)
+
+                # West edge pocket
+                west_transform = create_pocket_transform(
+                    lat_mid, segment.lon_min, core_radius_mm, 'west'
+                )
+                west_pocket = half_pocket.copy()
+                west_pocket.apply_transform(west_transform)
+
+                # Boolean subtract pockets from shell patch (which is a valid volume)
+                shell_patch = shell_patch.difference(east_pocket)
+                shell_patch = shell_patch.difference(west_pocket)
+                water_patches[0] = shell_patch
+                logger.info("  Added snap-fit pockets on east and west edges")
+            except Exception as e:
+                logger.warning(f"  Failed to add snap-fit pockets: {e}")
 
         logger.info(f"  Shape counts - Water: {len(water_patches)}, Land: {len(land_patches)}, Snow: {len(snow_patches)}")
 
