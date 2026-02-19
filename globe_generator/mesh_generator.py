@@ -22,7 +22,7 @@ def load_half_pocket() -> trimesh.Trimesh:
     Load the snap-fit pocket and return only the Z >= 0 half.
 
     Returns:
-        Trimesh of the half-pocket (16mm long)
+        Trimesh of the half-pocket
     """
     pocket_geom = trimesh.load(str(POCKET_STL_PATH))
     if not isinstance(pocket_geom, trimesh.Trimesh):
@@ -32,6 +32,8 @@ def load_half_pocket() -> trimesh.Trimesh:
     # Slice to keep only Z >= 0 (one half of the symmetric pocket)
     # Normal [0,0,1] keeps the side where Z >= 0, cap=True closes the cut
     half_pocket = pocket.slice_plane([0, 0, 0], [0, 0, 1], cap=True)
+    # try to make it very small so we don't collide with cells
+    half_pocket.apply_scale(0.75)
     return half_pocket
 
 
@@ -45,9 +47,9 @@ def create_pocket_transform(
     Create transformation matrix to position pocket at edge midpoint.
 
     The pocket is oriented so:
-    - Its Z axis (length) aligns with north-south tangent
-    - Its Y axis (depth) points radially inward
-    - Its X axis (width) aligns with east-west tangent
+    - Its Z axis (length, 16mm) runs east-west, pointing toward adjacent segment
+    - Its X axis (width, 13.2mm) runs north-south along the edge
+    - Its Y axis (depth, 5.2mm) points radially inward
 
     Args:
         lat: Latitude of pocket center in degrees
@@ -86,21 +88,18 @@ def create_pocket_transform(
     east = east / np.linalg.norm(east)
 
     # Pocket orientation:
-    # - Pocket Z (length) -> north direction
-    # - Pocket Y (depth) -> inward (-radial) for east edge, or adjusted for west
-    # - Pocket X (width) -> east direction
-    #
-    # For east edge: pocket opens toward east (outward from segment)
-    # For west edge: pocket opens toward west (outward from segment)
+    # - Pocket Z (length) -> east direction (toward adjacent segment)
+    # - Pocket X (width) -> north direction (along the edge)
+    # - Pocket Y (depth) -> inward (-radial)
 
     if direction == 'east':
-        pocket_x = east
-        pocket_y = -radial  # Depth points inward (pocket opens outward)
-        pocket_z = north
+        pocket_z = east      # Length points east toward adjacent segment
+        pocket_x = north     # Width runs along edge (north-south)
+        pocket_y = -radial   # Depth points inward
     else:  # west
-        pocket_x = -east  # Flip to face west
-        pocket_y = -radial
-        pocket_z = north
+        pocket_z = -east     # Length points west toward adjacent segment
+        pocket_x = north     # Width runs along edge
+        pocket_y = -radial   # Depth points inward
 
     # Build rotation matrix (columns are the new axes)
     rotation = np.eye(4)
@@ -695,10 +694,10 @@ def generate_segment_mesh(
             lon1 = float(row['lon_a_deg'])
             lon2 = float(row['lon_b_deg'])
 
-            # Check if cell overlaps segment (preserve exact logic from lines 245-248)
-            if lat2 <= segment.lat_min or lat1 >= segment.lat_max:
+            # Check if cell fully within segment
+            if lat1 < segment.lat_min or lat2 > segment.lat_max:
                 continue
-            if lon2 <= segment.lon_min or lon1 >= segment.lon_max:
+            if lon1 < segment.lon_min or lon2 > segment.lon_max:
                 continue
 
             # Water patches
@@ -728,22 +727,37 @@ def generate_segment_mesh(
                     if ssp is not None:
                         snow_patches.append(ssp)
 
+        # Repair shell_patch for polar segments (may have degenerate faces at pole)
+        if not shell_patch.is_volume:
+            # Remove degenerate (zero-area) faces
+            areas = shell_patch.area_faces
+            valid_faces = areas > 1e-10
+            if not np.all(valid_faces):
+                shell_patch.update_faces(valid_faces)
+                shell_patch.remove_unreferenced_vertices()
+            # Fill any holes and fix normals
+            shell_patch.fill_holes()
+            trimesh.repair.fix_normals(shell_patch)
+
         # Add snap-fit pockets to shell before combining with elevation patches
         if POCKET_STL_PATH.exists():
             try:
                 half_pocket = load_half_pocket()
-                lat_mid = (segment.lat_min + segment.lat_max) / 2.0
+                # Position pocket centered N-S on the edge
+                pocket_lat = (segment.lat_min + segment.lat_max) / 2.0
+                # Position pocket lower on wall (smaller radius = closer to base after rotation)
+                pocket_radius = r_inner + 1.0
 
                 # East edge pocket
                 east_transform = create_pocket_transform(
-                    lat_mid, segment.lon_max, core_radius_mm, 'east'
+                    pocket_lat, segment.lon_max, pocket_radius, 'east'
                 )
                 east_pocket = half_pocket.copy()
                 east_pocket.apply_transform(east_transform)
 
                 # West edge pocket
                 west_transform = create_pocket_transform(
-                    lat_mid, segment.lon_min, core_radius_mm, 'west'
+                    pocket_lat, segment.lon_min, pocket_radius, 'west'
                 )
                 west_pocket = half_pocket.copy()
                 west_pocket.apply_transform(west_transform)
