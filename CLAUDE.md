@@ -43,6 +43,9 @@ python3 globe.py -s N60-90_E000-090 --snow
 
 # Generate all 48 segments (~5-10 minutes)
 python3 globe.py
+
+# Generate Bambu Studio-ready 3MF files (~4 minutes)
+python3 bambu_3mf.py
 ```
 
 ### Linting
@@ -80,6 +83,7 @@ Edit `config.yaml` to set data paths and globe parameters. Key parameters:
    - Sample snow coverage if enabled
    - Calculate physical heights (water/land/snow layers)
 4. **Mesh generation** (`mesh_generator.py`): Generate 3MF with separate mesh objects using trimesh
+5. **Bambu Studio 3MF packaging** (`bambu_3mf.py`): Combines segment 3MFs into hemisphere files with extruder assignments and plate layouts
 
 ### Critical Design Decisions
 
@@ -122,6 +126,13 @@ Format: `{N|S}{lat_min}-{lat_max}_{E|W}{lon_min}-{lon_max}`
 - Exports separate mesh objects for water/land/snow to 3MF format
 
 **segment_generator.py**: Defines the 48 segment boundaries based on latitude bands
+
+**bambu_3mf.py**: Converts trimesh segment 3MFs into Bambu Studio-compatible hemisphere 3MFs
+- Reads individual segment 3MFs from `output/`, groups into 4 plates of 6 per hemisphere
+- Generates Bambu 3MF ZIP with split object files, component assembly, and metadata
+- Assigns extruder 1 (water), 2 (land), 3 (snow) via `Metadata/model_settings.config`
+- Positions objects using Bambu Studio's plate stride formula (`plate_size * 1.2`) for correct plate assignment
+- Output: `3mf/topoglobe_north.3mf`, `3mf/topoglobe_south.3mf`
 
 ## Common Pitfalls
 

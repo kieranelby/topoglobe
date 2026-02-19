@@ -174,6 +174,8 @@ Cell boundaries are precisely aligned with segment edges, ensuring adjacent segm
 ## Architecture
 
 ```
+globe.py                   # Main entry point - generates segment 3MFs
+bambu_3mf.py               # Packages segments into Bambu Studio 3MFs
 globe_generator/
 ├── config.py              # Configuration dataclasses
 ├── grid_builder.py        # Equal-area grid generation
@@ -181,6 +183,7 @@ globe_generator/
 ├── segment_generator.py   # 48-segment definition
 ├── mesh_generator.py      # Pure-Python mesh generation using trimesh
 └── spherical_geometry.py  # Spherical coordinate and geometry utilities
+snapfits/                  # Snap-fit connector pocket STL (from Connector1 Slim)
 ```
 
 **Key Features:**
@@ -227,56 +230,51 @@ Shell patches automatically use ~1° angular subdivision for professional-qualit
 
 ## Slicer
 
-Unfortunately the final print-ready 3mf files with profile and colour data are too big to upload to GitHub!
+### Generating Bambu Studio 3MF Files
 
-They can be found on Maker World, as two models - one for the Northern Hemisphere and one for the Southern Hemisphere:
+After generating the 48 segment 3MFs in `output/`, run `bambu_3mf.py` to produce Bambu Studio-ready files:
+
+```bash
+python3 bambu_3mf.py
+```
+
+This produces two files in `3mf/`:
+- `topoglobe_north.3mf` - 24 northern hemisphere segments across 4 plates
+- `topoglobe_south.3mf` - 24 southern hemisphere segments across 4 plates
+
+Each file has filament colours pre-assigned (filament 1 = water, filament 2 = land) and segments arranged 6 per plate, so you can open them directly in Bambu Studio and slice.
+
+Options:
+```bash
+python3 bambu_3mf.py --hemisphere north   # Only one hemisphere
+python3 bambu_3mf.py --input-dir output --output-dir 3mf
+```
+
+### Print Settings
+
+1. Open the generated 3MF in Bambu Studio.
+2. Change the filaments so that filament 1 is the water colour and filament 2 is the land colour.
+3. Choose the "0.12mm Fine" profile.
+4. Enable support, with type = normal, and maybe Top interface layers = 1.
+
+### Print-Ready Files on MakerWorld
+
+The 3MF files are too big for GitHub. Pre-built print-ready files can be found on MakerWorld, though note these are from an older version and do not include snap-fit connector pockets:
 
  - [Northern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2254737-topoglobe-topographic-globe-kit-18cm-northern-half#profileId-2455952)
  - [Southern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2264577-topoglobe-topographic-globe-kit-18cm-southern-half#profileId-2467891)
 
 ![Screenshot of the Northern Hemisphere segments in a slicer.](docs/segments-in-slicer.png)
 
-To make the final 3mf models from the segments output by the Python program, the steps in Bambu Studio are:
-
-1\. Download data files, install dependencies and run `topoglobe.py` to make the segments in the `output` directory if you haven't already.  
-
-2\. Create an empty project in Bambu Studio.
-
-3\. Change the filaments so that filament 1 is the water colour and 2 is the land colour.
-
-4\. Choose the "0.12mm Fine" profile.
-
-5\. Enable support, with type = normal, and maybe Top interface layers = 1.
-
-6\. Import six segments from the `output` directory to the first plate. It's probably easiest to go through the files in alphabetical order. 
-
-When importing, some dialogs may pop up.
-
-We want to import multiple objects in each imported segment as a single object with multiple parts:
-
-![Screenshot of the multiple objects dialog.](docs/slicer-several-objects-as-one.png)
-
-Careful though, sometimes it asks about scaling the model - we do not want to scale the model, it's already in millimetres, so say No to this:
-
-![Screenshot of the scaling dialog.](docs/slicer-no-scale.png)
-
-You'll need to go into the "Objects" panel and change the filament to 2 for the land parts:
-
-![Screenshot of the Objects filament selection per part.](docs/slicer-choosing-land-part-filament.png)
-
-7\. Then add a new plate, and import six more segments, until you have all 4 plates from the Northern Hemisphere.
-
-8.\ I ended up making two models since Maker World (and to some extent Bambu Studio even) doesn't like models over 200MB.
-
-So finally, repeat the entire process from step 2 to make another 3mf for the Southern Hemisphere, containing 4 plates with the remaining 24 segments:
-
 ![Screenshot of the Southern Hemisphere segments in a slicer.](docs/segments-in-slicer-southern.png)
 
 ## Assembly
 
-To join the segments together, I used 80/120 grit sandpaper to remove "sprue" and roughen the edges to be glued slightly, then used SuperGlue.
+Adjacent segments join together using snap-fit connectors based on [Connector1 Slim by ckolivas on Printables](https://www.printables.com/model/1134923-connector1-slim). Each segment has snap-fit pockets cut into its east and west edges during mesh generation. Print the matching connector pegs separately and snap them in to join segments side by side.
 
-I worked up/down "ring-by-ring" from the equator, one hemisphere at a time.
+For the north-south joins between latitude bands, use 80/120 grit sandpaper to roughen the edges slightly, then glue with SuperGlue.
+
+Work up/down "ring-by-ring" from the equator, one hemisphere at a time.
 
 ## Decoration
 
@@ -352,7 +350,7 @@ venv/bin/python3 -m mypy globe_generator/*.py *.py
 
  - When in the default "no-snow" mode, some parts of Greenland are shown as water, but actually the land is below sea-level due to the weight of the ice! Sorry Greenland. I probably should have used the ice elevation not the bedrock elevation data set.
  - A few of the Northern Hemisphere segments have non-closed manifolds. They still seem to slice ok.
- - It could do with being easier to assemble and quicker to print!
+ - It could do with being quicker to print!
  - When assembling, the join at 60 degrees North and South was a bit ugly.  
  - Possibly topoglobe could be slightly more aware of the physical limitation of 3d-printing; some very pointy volcanic islands are just too delicate, and some "stringing" occurs around rapid changes in sea-depth.
 
