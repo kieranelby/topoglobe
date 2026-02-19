@@ -589,8 +589,7 @@ def generate_bambu_3mf(
     has_clips = CLIP_STL_PATH.exists()
 
     # Bambu Studio plate layout: compute_colum_count(n) = round(sqrt(n))
-    # Include clip plate in count so all plates share consistent grid layout
-    num_plates = len(plates_segments) + (1 if has_clips else 0)
+    num_plates = len(plates_segments)
     plate_cols = round(math.sqrt(num_plates)) if num_plates > 0 else 1
 
     for plate_idx, plate_segments in enumerate(plates_segments):
@@ -644,11 +643,10 @@ def generate_bambu_3mf(
 
         positions = compute_plate_layout(clip_segments)
 
-        clip_plate_idx = len(plates)
-        col = clip_plate_idx % plate_cols
-        row = clip_plate_idx // plate_cols
-        plate_offset_x = col * PLATE_STRIDE_X
-        plate_offset_y = -row * PLATE_STRIDE_Y
+        # Position clip plate to the right of the segment grid (top row)
+        # so Bambu shows: S S C / S S  instead of  S S / S S / C
+        plate_offset_x = plate_cols * PLATE_STRIDE_X
+        plate_offset_y = 0.0
 
         clip_plate: list[PlateSegment] = []
         for seg, (px, py, pz) in zip(clip_segments, positions):
