@@ -239,8 +239,8 @@ python3 bambu_3mf.py
 ```
 
 This produces two files in `3mf/`:
-- `topoglobe_north.3mf` - 24 northern hemisphere segments across 4 plates
-- `topoglobe_south.3mf` - 24 southern hemisphere segments across 4 plates
+- `topoglobe_18_2_north.3mf` - 24 northern hemisphere segments across 4 plates
+- `topoglobe_18_2_south.3mf` - 24 southern hemisphere segments across 4 plates
 
 Each file has filament colours pre-assigned (filament 1 = water, filament 2 = land) and segments arranged 6 per plate, so you can open them directly in Bambu Studio and slice.
 

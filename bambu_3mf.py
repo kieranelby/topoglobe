@@ -646,7 +646,7 @@ def generate_bambu_3mf(
 
     # Write ZIP
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / f"topoglobe_{hemisphere}.3mf"
+    output_path = output_dir / f"topoglobe_18_2_{hemisphere}.3mf"
 
     logger.info(f"Writing {output_path}...")
 
