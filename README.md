@@ -27,6 +27,8 @@ The 3mf files are too big for github - they can be found on MakerWorld at:
  - [Northern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2254737-topoglobe-topographic-globe-kit-18cm-northern-half#profileId-2455952)
  - [Southern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2264577-topoglobe-topographic-globe-kit-18cm-southern-half#profileId-2467891)
 
+Note these are from an older version and do not include snap-fit connector pockets yet.
+
 The files are designed for Bambu Studio and have only been printed in a Bambu P1S so far.
 
 ## Installation
@@ -351,14 +353,18 @@ venv/bin/python3 -m mypy globe_generator/*.py *.py
  - When in the default "no-snow" mode, some parts of Greenland are shown as water, but actually the land is below sea-level due to the weight of the ice! Sorry Greenland. I probably should have used the ice elevation not the bedrock elevation data set.
  - A few of the Northern Hemisphere segments have non-closed manifolds. They still seem to slice ok.
  - It could do with being quicker to print!
- - When assembling, the join at 60 degrees North and South was a bit ugly.  
+ - The connectors only run east-west, you still have to glue the six "rings" together.
  - Possibly topoglobe could be slightly more aware of the physical limitation of 3d-printing; some very pointy volcanic islands are just too delicate, and some "stringing" occurs around rapid changes in sea-depth.
 
 ## License
 
 This project is provided as-is for personal and educational use.
 
-Please don't blame me if:
+The 3mf files are provided under the Creative Commons Attribution—Noncommercial—Share Alike Licence - http://creativecommons.org/licenses/by-nc-sa/4.0/ .
+
+The "snapfit" connectors used to hold the segments together are made by DexTech https://www.printables.com/@DexTech - see https://www.printables.com/model/1134923-connector1-slim and used under the same licence. Any blame for scaling the snapfits even smaller lies with me, not with DexTech!
+
+On that note, please don't blame me if:
  - your 3D printer gives up or catches fire;
  - you get lost during your solo navigation around the world by coracle using only this globe for navigation;
  - your favourite island is missing. 

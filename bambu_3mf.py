@@ -14,6 +14,7 @@ Usage:
 import argparse
 import json
 import logging
+import math
 import uuid
 import zipfile
 from dataclasses import dataclass, field
@@ -36,6 +37,11 @@ PLATE_SPACING = 10.0  # mm gap between objects on plate
 # where LOGICAL_PART_PLATE_GAP = 1/5 (from BambuStudio PartPlate.cpp)
 PLATE_STRIDE_X = PLATE_WIDTH * 1.2
 PLATE_STRIDE_Y = PLATE_DEPTH * 1.2
+
+# Snap-fit clip settings
+CLIP_STL_PATH = Path("snapfits/connector1-slim-model_files/clip-slim-00-clearance-r2.stl")
+CLIP_SCALE = 0.75
+CLIPS_PER_PLATE = 24
 
 
 @dataclass
@@ -173,8 +179,9 @@ def compute_plate_layout(segments: list[SegmentMeshes]) -> list[tuple[float, flo
     elif n <= 6:
         cols, rows = 3, 2
     else:
-        cols = 3
-        rows = (n + 2) // 3
+        # Wider-than-tall grid for larger counts (e.g. 6x4 for 24 clips)
+        cols = round(math.sqrt(n * 1.5))
+        rows = math.ceil(n / cols)
 
     # Calculate column widths and row heights
     col_widths = []
@@ -578,10 +585,13 @@ def generate_bambu_3mf(
 
     plates: list[list[PlateSegment]] = []
 
+    # Check if clip plate should be added
+    has_clips = CLIP_STL_PATH.exists()
+
     # Bambu Studio plate layout: compute_colum_count(n) = round(sqrt(n))
-    import math as _math
-    num_plates = len(plates_segments)
-    plate_cols = round(_math.sqrt(num_plates)) if num_plates > 0 else 1
+    # Include clip plate in count so all plates share consistent grid layout
+    num_plates = len(plates_segments) + (1 if has_clips else 0)
+    plate_cols = round(math.sqrt(num_plates)) if num_plates > 0 else 1
 
     for plate_idx, plate_segments in enumerate(plates_segments):
         # Compute within-plate layout positions (centered on 256x256 area)
@@ -617,6 +627,49 @@ def generate_bambu_3mf(
             plate.append(ps)
 
         plates.append(plate)
+
+    # Add clip plate (5th plate with snap-fit connector clips)
+    if has_clips:
+        logger.info(f"Adding {CLIPS_PER_PLATE} snap-fit clips at {CLIP_SCALE:.0%} scale...")
+        clip_mesh = trimesh.load(str(CLIP_STL_PATH))
+        if isinstance(clip_mesh, trimesh.Scene):
+            clip_mesh = trimesh.util.concatenate(list(clip_mesh.geometry.values()))
+        clip_mesh.apply_scale(CLIP_SCALE)
+
+        clip_segments = []
+        for i in range(CLIPS_PER_PLATE):
+            seg = SegmentMeshes(segment_id=f"clip_{i + 1:02d}")
+            seg.water = clip_mesh.copy()
+            clip_segments.append(seg)
+
+        positions = compute_plate_layout(clip_segments)
+
+        clip_plate_idx = len(plates)
+        col = clip_plate_idx % plate_cols
+        row = clip_plate_idx // plate_cols
+        plate_offset_x = col * PLATE_STRIDE_X
+        plate_offset_y = -row * PLATE_STRIDE_Y
+
+        clip_plate: list[PlateSegment] = []
+        for seg, (px, py, pz) in zip(clip_segments, positions):
+            _, parts = build_object_model_xml(seg, next_id)
+            next_id += len(parts)
+            assembly_id = next_id
+            next_id += 1
+
+            ps = PlateSegment(
+                segment=seg,
+                object_file_idx=next_object_file_idx,
+                assembly_object_id=assembly_id,
+                plate_x=px + plate_offset_x,
+                plate_y=py + plate_offset_y,
+                plate_z=pz,
+            )
+            ps.part_ids = parts
+            next_object_file_idx += 1
+            clip_plate.append(ps)
+
+        plates.append(clip_plate)
 
     # Build all XML content
     logger.info("Generating 3MF structure...")
