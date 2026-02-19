@@ -19,6 +19,7 @@ data/*.tif
 # Output files
 output/
 *.3mf
+!3mf/settings.3mf
 
 # IDE
 .vscode/
