@@ -18,7 +18,7 @@ This python program combines elevation data and optional snow coverage data to c
 
 ![Photo of the printed Northern Hemisphere showing Asia with an apple for scale.](docs/printed_topoglobe_18_1_n_asia_apple.jpg)
 
-![Screenshot of the Northern Hemisphere segments in a slicer.](docs/segments-in-slicer.png)
+![Screenshot of the Northern Hemisphere segments in a slicer.](docs/segments-in-slicer-v2.png)
 
 ## Print Ready 3D Files
 
@@ -26,8 +26,6 @@ The 3mf files are too big for github - they can be found on MakerWorld at:
 
  - [Northern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2254737-topoglobe-topographic-globe-kit-18cm-northern-half#profileId-2455952)
  - [Southern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2264577-topoglobe-topographic-globe-kit-18cm-southern-half#profileId-2467891)
-
-Note these are from an older version and do not include snap-fit connector pockets yet.
 
 The files are designed for Bambu Studio and have only been printed in a Bambu P1S so far.
 
@@ -257,24 +255,22 @@ python3 bambu_3mf.py --input-dir output --output-dir 3mf
 1. Open the generated 3MF in Bambu Studio.
 2. Change the filaments so that filament 1 is the water colour and filament 2 is the land colour.
 3. Choose the "0.12mm Fine" profile.
-4. Enable support, with type = normal, and maybe Top interface layers = 1.
 
 ### Print-Ready Files on MakerWorld
 
-The 3MF files are too big for GitHub. Pre-built print-ready files can be found on MakerWorld, though note these are from an older version and do not include snap-fit connector pockets:
+The 3MF files are too big for GitHub. Pre-built print-ready files can be found on MakerWorld:
 
  - [Northern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2254737-topoglobe-topographic-globe-kit-18cm-northern-half#profileId-2455952)
  - [Southern Hemisphere 3mf on MakerWorld](https://makerworld.com/en/models/2264577-topoglobe-topographic-globe-kit-18cm-southern-half#profileId-2467891)
 
-![Screenshot of the Northern Hemisphere segments in a slicer.](docs/segments-in-slicer.png)
+![Screenshot of the Northern Hemisphere segments in a slicer.](docs/segments-in-slicer-v2.png)
 
-![Screenshot of the Southern Hemisphere segments in a slicer.](docs/segments-in-slicer-southern.png)
 
 ## Assembly
 
-Adjacent segments join together using snap-fit connectors based on [Connector1 Slim by ckolivas on Printables](https://www.printables.com/model/1134923-connector1-slim). Each segment has snap-fit pockets cut into its east and west edges during mesh generation. Print the matching connector pegs separately and snap them in to join segments side by side.
+Adjacent segments join together using snap-fit connectors based on [Connector1 Slim by DexTech on Printables](https://www.printables.com/model/1134923-connector1-slim). Each segment has snap-fit pockets cut into its east and west edges during mesh generation. A plate of matching connector pegs is included to print; snap them in to join segments side by side.
 
-For the north-south joins between latitude bands, use 80/120 grit sandpaper to roughen the edges slightly, then glue with SuperGlue.
+For the north-south joins between latitude bands, optionally use 80/120 grit sandpaper to roughen the edges slightly, then glue with SuperGlue.
 
 Work up/down "ring-by-ring" from the equator, one hemisphere at a time.
 
@@ -353,6 +349,7 @@ venv/bin/python3 -m mypy globe_generator/*.py *.py
  - When in the default "no-snow" mode, some parts of Greenland are shown as water, but actually the land is below sea-level due to the weight of the ice! Sorry Greenland. I probably should have used the ice elevation not the bedrock elevation data set.
  - A few of the Northern Hemisphere segments have non-closed manifolds. They still seem to slice ok.
  - It could do with being quicker to print!
+ - It would be nice to take a list of interesting co-ordinates (holiday locations? data-centres?) and have them turn into little crosses of a 3rd color.
  - The connectors only run east-west, you still have to glue the six "rings" together.
  - Possibly topoglobe could be slightly more aware of the physical limitation of 3d-printing; some very pointy volcanic islands are just too delicate, and some "stringing" occurs around rapid changes in sea-depth.
 
